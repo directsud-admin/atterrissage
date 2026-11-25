@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Atterrissage Direct Sud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Outil de pilotage : bandeau sticky + onglets, contenu en sections pleine largeur, tableaux denses */
+:root{
+  --bg:#eef1f3; --surface:#ffffff; --sunk:#f6f8f9; --ink:#14222c; --muted:#5a6a76; --line:#d8dfe4; --line2:#e8edf0;
+  --accent:#0b6b68; --accent-ink:#ffffff; --accent-soft:#d9eeec; --sun:#e2a325;
+  --good:#1d7f47; --good-soft:#dcf1e4; --warn:#a86e00; --warn-soft:#fbefd4; --bad:#b8392a; --bad-soft:#f8e0dc; --idle:#6c7a85; --idle-soft:#e6eaed;
+  --plan:#9fb3c0; --real:#0b6b68; --proj:#e2a325;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif; --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e161b; --surface:#152129; --sunk:#111c23; --ink:#e4ecf1; --muted:#93a5b2; --line:#26353f; --line2:#1d2b34;
+  --accent:#3fb7ae; --accent-ink:#06201e; --accent-soft:#163a39; --sun:#f0b84a;
+  --good:#5ccb8c; --good-soft:#163527; --warn:#f0b84a; --warn-soft:#3a2d12; --bad:#f08371; --bad-soft:#3d1f1a; --idle:#93a5b2; --idle-soft:#22313a;
+  --plan:#4f6676; --real:#3fb7ae; --proj:#f0b84a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e161b; --surface:#152129; --sunk:#111c23; --ink:#e4ecf1; --muted:#93a5b2; --line:#26353f; --line2:#1d2b34;
+  --accent:#3fb7ae; --accent-ink:#06201e; --accent-soft:#163a39; --sun:#f0b84a;
+  --good:#5ccb8c; --good-soft:#163527; --warn:#f0b84a; --warn-soft:#3a2d12; --bad:#f08371; --bad-soft:#3d1f1a; --idle:#93a5b2; --idle-soft:#22313a;
+  --plan:#4f6676; --real:#3fb7ae; --proj:#f0b84a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+.wrap{max-width:1440px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:10px}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand h1{font-family:var(--f-display);font-weight:800;font-size:20px;letter-spacing:-.01em;margin:0}
+.brand .sub{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--sun);display:inline-block;transform:translateY(-1px)}
+.ctl{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+select,input,textarea,button{font:inherit;color:inherit}
+select,input[type=text],input[type=number],input[type=date],textarea{background:var(--sunk);border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible,textarea:focus-visible,a:focus-visible,tr[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:8px 12px 9px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-current="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--idle);display:inline-block}
+.sync.ok i{background:var(--good)} .sync.err i{background:var(--bad)}
+main{padding-block:18px 60px;display:grid;gap:18px}
+section.blk{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.blk h2{font-family:var(--f-display);font-size:16px;font-weight:700;margin:0 0 4px}
+.blk .hint{color:var(--muted);font-size:12.5px;margin:0 0 12px;max-width:80ch}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.kpi{background:var(--surface);padding:12px 14px;min-width:0}
+.kpi .l{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.kpi .v{font-family:var(--f-display);font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.15;margin-top:2px}
+.kpi .s{font-size:12px;color:var(--muted)}
+.kpi.hl{background:var(--accent-soft)}
+.tw{overflow-x:auto;border:1px solid var(--line2);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 9px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line2)}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;background:var(--sunk);position:sticky;top:0}
+th.l,td.l{text-align:left}
+tbody tr[tabindex]{cursor:pointer}
+tbody tr[tabindex]:hover{background:var(--sunk)}
+tfoot td{font-weight:700;background:var(--sunk)}
+td .n2{display:block;font-size:11px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.p-avance{color:var(--good);background:var(--good-soft)} .p-ok{color:var(--accent);background:var(--accent-soft)}
+.p-retard{color:var(--bad);background:var(--bad-soft)} .p-avenir,.p-hors,.p-terminee,.p-annulee{color:var(--idle);background:var(--idle-soft)}
+.p-vigilance{color:var(--warn);background:var(--warn-soft)} .p-encours{color:var(--warn);background:var(--warn-soft)} .p-gap{color:var(--warn);background:var(--warn-soft)}
+.pos{color:var(--good)} .neg{color:var(--bad)} .mut{color:var(--muted)}
+.prog{position:relative;width:110px;height:8px;background:var(--line2);border-radius:4px;display:inline-block;vertical-align:middle;overflow:hidden}
+.prog b{position:absolute;inset:0 auto 0 0;background:var(--real);border-radius:4px}
+.prog b.b-avance{background:var(--good)}.prog b.b-ok{background:var(--accent)}.prog b.b-vigilance{background:var(--warn)}.prog b.b-retard{background:var(--bad)}
+.prog s{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink);text-decoration:none}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.dan{color:var(--bad);border-color:var(--bad)}
+.btn.sm{padding:3px 8px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.banner{border:1px solid var(--warn);background:var(--warn-soft);color:var(--ink);border-radius:var(--r);padding:10px 14px;font-size:13px}
+.banner b{color:var(--warn)}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-size:11px;font-family:var(--f-body)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}
+.drop{border:2px dashed var(--line);border-radius:var(--r);padding:28px;text-align:center;color:var(--muted);background:var(--sunk);cursor:pointer}
+.drop.on{border-color:var(--accent);color:var(--accent)}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(10,20,26,.45);display:flex;justify-content:flex-end}
+.sheet{background:var(--surface);width:min(980px,100%);height:100%;overflow:auto;padding:18px max(16px,env(safe-area-inset-right,0px)) 40px 18px;box-shadow:-10px 0 30px rgba(0,0,0,.2)}
+.sheet h2{font-family:var(--f-display);font-size:20px;margin:0}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 14px;margin-block:14px}
+.form label{display:grid;gap:3px;font-size:12px;color:var(--muted);font-weight:600;min-width:0}
+.form label.wide{grid-column:1/-1}
+.wk input{width:72px;text-align:right;padding:3px 6px}
+.wk td.past{background:var(--sunk)}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:6px;font-weight:600;z-index:60}
+.empty{padding:40px 16px;text-align:center;color:var(--muted)}
+.tag{font-size:11px;color:var(--muted);background:var(--sunk);border:1px solid var(--line2);border-radius:4px;padding:1px 5px}
+.confirm{display:inline-flex;gap:6px;align-items:center;font-size:12px}
+/* cadencier */
+.cad table{font-size:11.5px;width:auto}
+.cad th,.cad td{padding:4px 3px;border-right:1px solid var(--line2)}
+.cad .cl{position:sticky;left:0;z-index:2;background:var(--surface);text-align:left;min-width:230px;max-width:260px;white-space:normal;padding-left:8px}
+.cad thead .cl{background:var(--sunk);z-index:3}
+.cad .cz{min-width:34px;text-align:center}
+.cad th.mo{text-align:left;font-size:10.5px;border-bottom:0}
+.cad th.now{background:var(--ink);color:var(--surface)}
+.cad tr.grp td{background:var(--sunk);font-family:var(--f-display);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.cad tr.sub td{font-weight:600;background:var(--sunk);color:var(--muted)}
+.cad tr.tot td{font-weight:700;background:var(--accent-soft)}
+.cad tr.sub .cl,.cad tr.tot .cl,.cad tr.grp .cl{background:inherit}
+.cg{background:var(--good-soft);color:var(--good);font-weight:600}.co{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.cw{background:var(--warn-soft);color:var(--warn);font-weight:600}.cb{background:var(--bad-soft);color:var(--bad);font-weight:600}
+.cx{background:var(--sunk)}
+.fut{color:var(--muted);background:repeating-linear-gradient(135deg,transparent 0 4px,var(--line2) 4px 5px)}
+.cad .cs{min-width:62px;text-align:right;padding-inline:6px;white-space:nowrap}
+.cad .cs.first{border-left:2px solid var(--line)}
+.cbadge{display:inline-block;font-size:10.5px;font-weight:700;padding:0 5px;border-radius:4px;margin-left:4px;white-space:nowrap}
+.cbadge.fut{color:var(--muted)}
+.kpis.k3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.kpis.k3 .v{font-size:34px}
+.kpi .v .cgt{color:var(--good)} .kpi .v .cot{color:var(--accent)} .kpi .v .cwt{color:var(--warn)} .kpi .v .cbt{color:var(--bad)}
+table.assot td,table.assot th{padding-block:9px}
+ol.plan{margin:0;padding-left:22px;display:grid;gap:10px;max-width:120ch}
+ol.plan li{line-height:1.5}
+.tag.t-renfort{color:var(--bad);border-color:var(--bad)}.tag.t-asso{color:var(--warn);border-color:var(--warn)}.tag.t-verif{color:var(--muted)}.tag.t-avance{color:var(--good);border-color:var(--good)}
+.lg{display:inline-block;width:14px!important;height:10px!important;border:1px solid var(--line);vertical-align:middle;margin-right:5px}
+.zgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:4px 12px;margin-bottom:6px}
+.zck{display:flex;gap:6px;align-items:center;font-size:13px}
+details summary{cursor:pointer;font-weight:600}
+@media (prefers-reduced-motion:no-preference){.prog b{transition:width .3s}}
+@media (max-width:640px){.kpi .v{font-size:22px}.brand .sub{display:none}}
+</style>
+<!-- ===== Version autonome : Firebase (connexion + base de données partagée) ===== -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<style>
+#gate{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px max(16px,env(safe-area-inset-left,0px))}
+#gate .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:28px;width:min(420px,100%);display:grid;gap:14px}
+#gate h1{font-family:var(--f-display);font-size:24px;margin:0;display:flex;align-items:center;gap:10px}
+#gate h1 i{width:12px;height:12px;border-radius:50%;background:var(--sun);display:inline-block}
+#gate p{margin:0;color:var(--muted)}
+#gate label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
+#gate input{font-size:16px;padding:10px 12px}
+#gate .btn{padding:10px 14px;font-size:15px}
+#gate .err{color:var(--bad);font-size:13px;min-height:1em}
+#gate .sep{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}#gate .sep::before,#gate .sep::after{content:"";flex:1;height:1px;background:var(--line)}
+#gate a{color:var(--accent);font-size:13px;cursor:pointer}
+.who{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center}
+</style>
+<script>
+window.STANDALONE = true;
+(function () {
+  const $g = () => document.getElementById('gate');
+  const gateHTML = inner => `<div class="card"><h1><i></i>Atterrissage</h1>${inner}</div>`;
+  function show(inner) { const g = $g(); if (!g) return; g.innerHTML = gateHTML(inner); g.hidden = false; }
+  function hide() { const g = $g(); if (g) g.hidden = true; }
+  const cfg = window.FIREBASE_CONFIG;
+  if (!cfg || !cfg.apiKey || String(cfg.apiKey).startsWith('A_REMPLACER')) {
+    document.addEventListener('DOMContentLoaded', () => show('<p><b>Configuration manquante.</b></p><p>Le fichier <code>firebase-config.js</code> n\'est pas encore rempli. Suivez l\'étape 3 du guide d\'installation, puis rechargez la page.</p>'));
+    window.claude = { use: async () => null }; return;
+  }
+  firebase.initializeApp(cfg);
+  const auth = firebase.auth();
+  const fs = firebase.firestore();
+  fs.settings({ ignoreUndefinedProperties: true, merge: true });
+  function loginForm(msg) {
+    show(`<p>Direct Sud · suivi des volumes. Connectez-vous pour accéder aux données.</p>
+      <button class="btn" id="gGoogle" type="button">Se connecter avec Google</button>
+      <div class="sep">ou</div>
+      <form id="gForm" style="display:grid;gap:12px">
+        <label>Adresse e-mail<input type="email" id="gMail" autocomplete="username" required></label>
+        <label>Mot de passe<input type="password" id="gPass" autocomplete="current-password" required></label>
+        <div class="err" id="gErr">${msg || ''}</div>
+        <button class="btn pri" type="submit">Se connecter</button>
+        <a id="gReset">Mot de passe oublié ?</a>
+      </form>`);
+    const err = t => { document.getElementById('gErr').textContent = t; };
+    const fr = e => ({ 'auth/invalid-credential': 'Adresse ou mot de passe incorrect.', 'auth/wrong-password': 'Adresse ou mot de passe incorrect.', 'auth/user-not-found': 'Adresse ou mot de passe incorrect.', 'auth/too-many-requests': 'Trop de tentatives : réessayez dans quelques minutes.', 'auth/popup-closed-by-user': 'Connexion Google annulée.', 'auth/unauthorized-domain': 'Ce site n\'est pas encore autorisé dans Firebase (étape 5 du guide).' }[e.code] || ('Connexion impossible (' + (e.code || e.message) + ').'));
+    document.getElementById('gForm').addEventListener('submit', e => { e.preventDefault(); err(''); auth.signInWithEmailAndPassword(document.getElementById('gMail').value.trim(), document.getElementById('gPass').value).catch(x => err(fr(x))); });
+    document.getElementById('gGoogle').addEventListener('click', () => { err(''); auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(x => err(fr(x))); });
+    document.getElementById('gReset').addEventListener('click', () => { const m = document.getElementById('gMail').value.trim(); if (!m) return err('Saisissez d\'abord votre adresse e-mail.'); auth.sendPasswordResetEmail(m).then(() => err('E-mail de réinitialisation envoyé à ' + m + '.')).catch(x => err(fr(x))); });
+  }
+  function refused() {
+    const u = auth.currentUser;
+    show(`<p><b>Accès refusé.</b></p><p>Le compte <b>${(u && u.email || '').replace(/[<>&"]/g, '')}</b> n'est pas autorisé à consulter ces données. Demandez à l'administrateur de l'ajouter dans les règles Firestore (étape 4 du guide).</p><button class="btn" id="gOut" type="button">Changer de compte</button>`);
+    document.getElementById('gOut').addEventListener('click', () => auth.signOut().then(() => location.reload()));
+  }
+  let resolveReady; const ready = new Promise(r => resolveReady = r);
+  auth.onAuthStateChanged(u => {
+    if (!u) { document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', () => loginForm()) : loginForm(); return; }
+    hide(); resolveReady(u);
+    const put = () => { const bar = document.querySelector('header .bar'); if (!bar || document.getElementById('who')) return;
+      const w = document.createElement('span'); w.className = 'who'; w.id = 'who'; w.textContent = u.email || '';
+      const b = document.createElement('button'); b.className = 'btn sm'; b.type = 'button'; b.textContent = 'Se déconnecter'; b.addEventListener('click', () => auth.signOut().then(() => location.reload()));
+      w.appendChild(b); bar.appendChild(w); };
+    document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', put) : put();
+  });
+  /* adaptateur : même interface que la base Claude utilisée par l'outil */
+  const onErr = (cb) => (e) => { if (e && e.code === 'permission-denied') refused(); if (cb) cb(e); };
+  const wrapCol = (c) => ({ doc: id => fs.collection(c).doc(id), onSnapshot: (next, err) => fs.collection(c).onSnapshot(next, onErr(err)) });
+  const db = { collection: wrapCol, doc: p => fs.doc(p) };
+  const downloads = { save: async ({ filename, data }) => {
+    const blob = data instanceof Blob ? data : new Blob([data]);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); return { status: 'saved' }; } };
+  window.claude = { use: async (name) => { await ready; if (name === 'db') return db; if (name === 'downloads') return downloads; if (name === 'user') return { can: async () => true }; return null; } };
+})();
+</script>
+</head>
+<body>
+<div id="gate" hidden></div>
+<header class="top"><div class="wrap"><div class="bar">
+<div class="brand"><span class="dot" aria-hidden="true"></span><h1>Atterrissage</h1><span class="sub">Direct Sud · volumes PA &amp; heures</span></div>
+<label class="ctl">Exercice <select id="year" aria-label="Exercice"></select></label>
+<label class="ctl">Données arrêtées à <select id="ref" aria-label="Semaine de référence"></select></label>
+<span class="ctl" id="refh"></span>
+<span class="sync" id="sync"><i></i><span>Démarrage…</span></span>
+</div>
+<nav class="tabs" aria-label="Sections"><button data-tab="synthese">Synthèse</button><button data-tab="cadencier">Cadencier</button><button data-tab="missions">Missions</button><button data-tab="assos">Associations</button><button data-tab="import">Import AlloHouston</button><button data-tab="export">Exports</button></nav>
+</div></header>
+<main class="wrap" id="view"></main>
+<div id="modal"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+/* ===== Moteur de calcul (fonctions pures) ===== */
+const DAY = 86400000;
+const P = iso => Date.parse(iso + 'T00:00:00Z');
+const ISO = t => new Date(t).toISOString().slice(0, 10);
+const addD = (iso, n) => ISO(P(iso) + n * DAY);
+function mon(iso) { const t = P(iso); const wd = (new Date(t).getUTCDay() + 6) % 7; return ISO(t - wd * DAY); }
+function isoWeek(iso) {
+  const d = new Date(P(iso)); const day = (d.getUTCDay() + 6) % 7; d.setUTCDate(d.getUTCDate() - day + 3);
+  const fy = d.getUTCFullYear(); const f = new Date(Date.UTC(fy, 0, 4));
+  return 1 + Math.round(((d - f) / DAY - 3 + ((f.getUTCDay() + 6) % 7)) / 7);
+}
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const normCode = s => String(s || '').toUpperCase().replace(/[\s ]/g, '');
+const REGION_ALIAS = {
+  nantes: 'paysdelaloire', loireatlantique: 'paysdelaloire', vendee: 'paysdelaloire', sarthe: 'paysdelaloire', maineetloire: 'paysdelaloire',
+  rennes: 'bretagne', illeetvilaine: 'bretagne', morbihan: 'bretagne', finistere: 'bretagne', cotesdarmor: 'bretagne',
+  tahiti: 'polynesie', polynesiefrancaise: 'polynesie', paris: 'iledefrance', rhonealpes: 'auvergnerhonealpes'
+};
+const regC = s => { const n = norm(s); return REGION_ALIAS[n] || n; };
+const TYPOS = ['DROM-COM', 'Itinérante', 'Fixe', 'Hybride', 'Porte-à-Porte', 'Sites privés'];
+
+function exWin(a, Y) {
+  const m = (a && a.exStart) || 1;
+  return { s: Date.UTC(Y, m - 1, 1), e: Date.UTC(Y + 1, m - 1, 1), label: m === 1 ? String(Y) : Y + '-' + String((Y + 1) % 100).padStart(2, '0') };
+}
+const inWin = (win, iso) => { const t = P(iso); return t >= win.s && t < win.e; };
+/* date de remise attendue d'une semaine de travail : jeudi de la semaine suivante */
+const remiseOfWeek = w => addD(w, 10);
+
+function missionWeeks(m) {
+  if (!m.start || !m.end) return [];
+  const out = []; let w = mon(m.start); const last = mon(m.end);
+  while (P(w) <= P(last)) { out.push(w); w = addD(w, 7); }
+  return out;
+}
+function targets(m, f) {
+  const ws = missionWeeks(m); const vol = Number(m[f]) || 0; const res = {};
+  if (!ws.length) return res;
+  const ov = (m.ov && m.ov[f]) || {};
+  let fixed = 0; const free = [];
+  ws.forEach(w => { const v = ov[w]; if (v !== undefined && v !== null && v !== '') { res[w] = Number(v); fixed += Number(v); } else free.push(w); });
+  const each = free.length ? Math.max(0, vol - fixed) / free.length : 0;
+  free.forEach(w => res[w] = each);
+  return res;
+}
+
+function buildIndex(S) {
+  const byCode = {}; const assoIdx = [];
+  Object.values(S.missions).forEach(m => (m.codes || []).forEach(c => { const k = normCode(c); (byCode[k] = byCode[k] || []).push(m); }));
+  Object.values(S.assos).forEach(a => [a.nom, ...(a.alias || [])].forEach(n => { const k = norm(n); if (k.length >= 2) assoIdx.push([k, a.id]); }));
+  assoIdx.sort((x, y) => y[0].length - x[0].length);
+  const cache = {};
+  const assoOf = name => {
+    const k = norm(name); if (k in cache) return cache[k];
+    let r = null; for (const [n, id] of assoIdx) { if (k === n) { r = id; break; } }
+    if (!r) for (const [n, id] of assoIdx) { if (n.length >= 3 && (k.startsWith(n) || k.includes(n))) { r = id; break; } }
+    return cache[k] = r;
+  };
+  return { byCode, assoOf };
+}
+
+function matchRow(row, S, idx) {
+  const key = normCode(row.c) + '|' + regC(row.r);
+  const mp = (S.cfg.mappings || {})[key];
+  if (mp) {
+    if (mp.startsWith('m:') && S.missions[mp.slice(2)]) { const m = S.missions[mp.slice(2)]; return { mid: m.id, aid: m.asso, manual: true }; }
+    if (mp.startsWith('a:')) return { mid: null, aid: mp.slice(2), manual: true };
+  }
+  const aid = idx.assoOf(row.a);
+  const cands = (idx.byCode[normCode(row.c)] || []).filter(m => !aid || m.asso === aid);
+  if (!cands.length) return { mid: null, aid };
+  const rc = regC(row.r); const t = P(row.w);
+  let best = null, bs = null;
+  for (const m of cands) {
+    const s = P(mon(m.start)) - 7 * DAY, e = P(mon(m.end)) + 7 * DAY;
+    const dist = t < s ? (s - t) / DAY : t > e ? (t - e) / DAY : 0;
+    const regMis = regC(m.region) === rc ? 0 : 1;
+    const hrs = S.heures[m.id] && S.heures[m.id].weeks && S.heures[m.id].weeks[row.w] ? 0 : 1;
+    const sc = [dist > 0 ? 1 : 0, regMis, hrs, dist, m.statut === 'annulee' ? 1 : 0];
+    if (!bs || cmp(sc, bs) < 0) { best = m; bs = sc; }
+  }
+  if (bs[3] > 60) return { mid: null, aid: aid || best.asso };
+  return { mid: best.id, aid: best.asso };
+}
+function cmp(a, b) { for (let i = 0; i < a.length; i++) { if (a[i] !== b[i]) return a[i] - b[i]; } return 0; }
+
+/* Agrège tous les imports -> réalisé par mission / par asso (non affecté) / inconnu */
+function realise(S) {
+  const idx = buildIndex(S);
+  const byM = {}, byA = {}, unk = [], groups = {};
+  Object.values(S.imports).forEach(doc => (doc.rows || []).forEach(r => {
+    const rm = r.rm || doc.remise;
+    const mt = matchRow(r, S, idx);
+    const n = S.cfg.attrition === 'exclure' ? r.n - (r.att || 0) : r.n;
+    if (n <= 0) return;
+    const e = { w: r.w, rm, n, att: r.att || 0, don: r.don || 0, rec: r.rec || [] };
+    if (mt.mid) (byM[mt.mid] = byM[mt.mid] || []).push(e);
+    else {
+      if (mt.aid) (byA[mt.aid] = byA[mt.aid] || []).push(e); else unk.push(e);
+      const k = normCode(r.c) + '|' + regC(r.r);
+      const g = groups[k] = groups[k] || { key: k, code: r.c, region: r.r, asso: r.a, aid: mt.aid, n: 0, first: r.w, last: r.w };
+      g.n += n; if (r.w < g.first) g.first = r.w; if (r.w > g.last) g.last = r.w;
+    }
+  }));
+  let cov = null; Object.values(S.imports).forEach(doc => (doc.rows || []).forEach(r => { if (!cov || r.w < cov) cov = r.w; }));
+  return { cov, byM, byA, unk, unmatched: Object.values(groups).sort((a, b) => b.n - a.n), idx };
+}
+
+function emptyU() { return { prev: 0, prevAD: 0, reel: 0, rest: 0, A: 0, B: 0, remW: 0, has: false }; }
+function addU(t, u) { ['prev', 'prevAD', 'reel', 'rest', 'A', 'B', 'remW'].forEach(k => t[k] += u[k] || 0); t.has = t.has || u.has; return t; }
+
+/* Métriques d'une mission sur l'exercice Y de son asso, à la semaine de référence ref (lundi) */
+function missionMetrics(m, S, R, Y, refPA, refH) {
+  const a = S.assos[m.asso] || {};
+  /* semaine de référence : bulletins pour les assos au PA, heures pour les assos à l'heure */
+  const ref = a.remu === 'H' && refH ? refH : refPA;
+  const win = exWin(a, Y);
+  const ws = missionWeeks(m).filter(w => inWin(win, remiseOfWeek(w)));
+  const cancelled = m.statut === 'annulee';
+  let tP = cancelled ? {} : targets(m, 'pa'), tH = cancelled ? {} : targets(m, 'h');
+  const entries = (R.byM[m.id] || []).filter(e => inWin(win, e.rm) && P(e.w) <= P(ref));
+  const hw = (S.heures[m.id] && S.heures[m.id].weeks) || {};
+  if (m.recon) { /* mission reconstituée : prévu = réalisé, semaine par semaine */
+    tP = {}; (R.byM[m.id] || []).forEach(e => { if (inWin(win, e.rm)) tP[e.w] = (tP[e.w] || 0) + e.n; });
+    tH = {}; Object.keys(hw).forEach(w => { if (inWin(win, remiseOfWeek(w))) tH[w] = Number(hw[w].h) || 0; });
+    [...Object.keys(tP), ...Object.keys(tH)].forEach(w => { if (!ws.includes(w)) ws.push(w); }); ws.sort();
+  }
+  const weeksH = Object.keys(hw).filter(w => inWin(win, remiseOfWeek(w)) && P(w) <= P(ref));
+  const inEx = entries.length > 0 || weeksH.length > 0 || ws.length > 0;
+  const rP = entries.reduce((s, e) => s + e.n, 0);
+  const rH = weeksH.reduce((s, w) => s + (Number(hw[w].h) || 0), 0);
+  const unit = (t, reel, hasVol) => {
+    const u = emptyU(); u.has = hasVol || reel > 0;
+    ws.forEach(w => { const v = t[w] || 0; u.prev += v; if (P(w) <= P(ref)) u.prevAD += v; else { u.rest += v; u.remW++; } });
+    u.reel = reel; u.A = reel + u.rest;
+    const ratio = u.prevAD > 0 && (rP > 0 || rH > 0) ? reel / u.prevAD : null;
+    u.ratio = ratio; u.B = ratio === null ? u.A : reel + u.rest * ratio;
+    u.besoin = u.remW > 0 ? Math.max(0, u.prev - reel) / u.remW : null;
+    return u;
+  };
+  const pa = unit(tP, rP, (!!Number(m.pa) || !!m.recon) && !cancelled);
+  const h = unit(tH, rH, !!Number(m.h) && !cancelled);
+  const past = ws.filter(w => P(w) <= P(ref)).length;
+  const gap = m.recon ? false : R.cov ? ws.some(w => P(w) < P(R.cov)) && P(ws[0]) <= P(ref) : ws.length > 0 && P(ws[0]) <= P(ref);
+  const status = cancelled ? 'annulee' : !ws.length ? (rP > 0 ? 'hors' : 'hors') : past === 0 ? 'avenir' : past === ws.length ? 'terminee' : 'encours';
+  /* productivité : PA par jour-recruteur (jours issus du suivi des heures) */
+  let jours = 0, recW = 0; weeksH.forEach(w => { jours += Number(hw[w].j) || 0; recW += (hw[w].rec || []).length; });
+  const prodJ = jours > 0 ? rP / jours : null;
+  const pah = rH > 0 ? rP / rH : null;
+  const don = entries.reduce((s, e) => s + e.don, 0);
+  return { m, a, win, ref, ws, inEx, gap, pa, h, status, jours, recW, prodJ, pah, don, tP, tH, entries, hw };
+}
+
+function unitOf(a) { return a && a.remu === 'H' ? 'h' : 'pa'; }
+function prixMission(a, m, cfg) {
+  if (a.remu === 'H') return a.prixH ? { v: Number(a.prixH), est: false } : null;
+  if (a.prixPA) return { v: Number(a.prixPA), est: false };
+  const g = (cfg.grille || {})[m.typo]; return g ? { v: Number(g), est: true } : null;
+}
+function contrat(a, Y) {
+  const c = (a.contrats || {})[String(Y)]; if (!c) return { pa: null, h: null };
+  const sum = f => { const base = c[f]; const sup = (c.supp || []).reduce((s, x) => s + (Number(x[f]) || 0), 0); return base === null || base === undefined || base === '' ? (sup || null) : Number(base) + sup; };
+  return { pa: sum('pa'), h: sum('h'), base: c };
+}
+
+/* Modèle complet */
+function computeAll(S, Y, ref, refH) {
+  const R = realise(S);
+  const MM = Object.values(S.missions).map(m => missionMetrics(m, S, R, Y, ref, refH || ref)).filter(x => x.inEx);
+  const assos = {};
+  Object.values(S.assos).forEach(a => {
+    const win = exWin(a, Y);
+    const ms = MM.filter(x => x.m.asso === a.id);
+    const pa = emptyU(), h = emptyU(); ms.forEach(x => { addU(pa, x.pa); addU(h, x.h); });
+    const aref = a.remu === 'H' && refH ? refH : ref;
+    const na = (R.byA[a.id] || []).filter(e => inWin(win, e.rm) && P(e.w) <= P(aref)).reduce((s, e) => s + e.n, 0);
+    pa.reel += na; pa.A += na; pa.B += na; pa.na = na;
+    const c = contrat(a, Y);
+    let ca = 0, caA = 0, caEst = false, caOk = true;
+    ms.forEach(x => { const p = prixMission(a, x.m, S.cfg); if (!p) { caOk = false; return; } if (p.est) caEst = true; const u = a.remu === 'H' ? x.h : x.pa; ca += u.reel * p.v; caA += u.A * p.v; });
+    if (!ms.length) caOk = false;
+    if (a.actif === false && !ms.length && !c.pa && !c.h) return;
+    assos[a.id] = { a, win, ms, pa, h, c, unit: unitOf(a), ca: caOk ? ca : null, caA: caOk ? caA : null, caEst };
+  });
+  return { R, MM, assos };
+}
+function statusOf(u, seuil) {
+  if (!u || u.prevAD <= 0) return u && u.reel > 0 ? 'avance' : 'avenir';
+  return attLevel(u.reel, u.prevAD, seuil);
+}
+/* Échelle unique d'atteinte (réalisé / objectif à date), utilisée dans tous les onglets */
+function attLevel(r, o, seuil) {
+  const s = seuil || 5; const p = Math.round(r / o * 100); /* comparé au % affiché, pour que la couleur colle toujours au chiffre */
+  return p >= 100 + s ? 'avance' : p >= 100 - s ? 'ok' : p >= 75 ? 'vigilance' : 'retard';
+}
+
+/* ===== Lecture des exports AlloHouston ===== */
+function parseDateAny(v) {
+  if (v === null || v === undefined || v === '') return null;
+  if (typeof v === 'number') return ISO(Date.UTC(1899, 11, 30) + Math.round(v) * DAY);
+  if (v instanceof Date) return ISO(Date.UTC(v.getFullYear(), v.getMonth(), v.getDate()));
+  const s = String(v).trim();
+  let m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/); if (m) return ISO(Date.UTC(+m[3], +m[2] - 1, +m[1]));
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  return null;
+}
+function tableFromAOA(aoa, must) {
+  let hi = aoa.findIndex(r => r && must.every(k => r.some(c => norm(c) === k)));
+  if (hi < 0) return null;
+  const H = aoa[hi].map(norm);
+  return aoa.slice(hi + 1).filter(r => r && r.some(c => c !== '' && c !== null)).map(r => { const o = {}; H.forEach((h, i) => { if (h) o[h] = r[i]; }); return o; });
+}
+function detectKind(aoa) {
+  if (tableFromAOA(aoa, ['idunique', 'codemission'])) return 'bulletins';
+  if (tableFromAOA(aoa, ['codeinterne', 'heures'])) return 'heures';
+  return null;
+}
+function parseBulletins(aoa) {
+  const rows = tableFromAOA(aoa, ['idunique', 'codemission']) || [];
+  return rows.map(o => ({
+    id: String(o.idunique || '').trim(), c: String(o.codemission || '').trim(), a: String(o.association || '').trim(), r: String(o.region || '').trim(),
+    eng: parseDateAny(o.datedengagement), val: parseDateAny(o.datedevalidation), statut: String(o.statut || '').trim(),
+    don: parseFloat(String(o.don || '0').replace(',', '.')) || 0, rec: String(o.recruteur || '').trim()
+  })).filter(x => x.id && x.eng);
+}
+const isAttr = s => norm(s).startsWith('annuleapresattrition');
+const isCounted = s => !s || norm(s) === 'remis' || isAttr(s);
+function aggregateBulletins(list, mode, remiseFile) {
+  const agg = new Map();
+  list.forEach(x => {
+    const w = mon(x.eng); const rm = mode === 'hebdo' ? remiseFile : addD(mon(x.val || x.eng), 10);
+    const k = [x.c, x.r, x.a, w, rm].join('\u0001');
+    let g = agg.get(k); if (!g) { g = { c: x.c, r: x.r, a: x.a, w, rm, n: 0, att: 0, don: 0, rec: new Set() }; agg.set(k, g); }
+    g.n++; if (isAttr(x.statut)) g.att++; g.don += x.don; if (x.rec) g.rec.add(x.rec);
+  });
+  return [...agg.values()].map(g => ({ ...g, don: Math.round(g.don * 100) / 100, rec: [...g.rec].sort() }));
+}
+function parseHeures(aoa) {
+  const rows = tableFromAOA(aoa, ['codeinterne', 'heures']) || [];
+  return rows.map(o => ({ d: parseDateAny(o.date), rec: String(o.recruteur || '').trim(), code: String(o.code || '').trim(), ci: String(o.codeinterne || '').trim(), a: String(o.association || '').trim(), z: String(o.zone || '').trim(), h: parseFloat(String(o.heures).replace(',', '.')) }))
+    .filter(x => x.d);
+}
+function resolveCI(ci, S) {
+  let x = String(ci || '').trim();
+  const byNorm = {}; Object.keys(S.missions).forEach(id => byNorm[normCode(id)] = id);
+  while (x) { const k = byNorm[normCode(x)]; if (k) return k; const y = x.replace(/-\d+$/, ''); if (y === x) return null; x = y; }
+  return null;
+}
+function aggregateHeures(list, S) {
+  const W = {}, NA = {};
+  list.forEach(x => {
+    if (!(x.h > 0)) return;
+    const w = mon(x.d); const mid = resolveCI(x.ci, S);
+    if (mid) {
+      const mm = W[mid] = W[mid] || { weeks: {}, src: new Set() }; mm.src.add(x.ci);
+      const c = mm.weeks[w] = mm.weeks[w] || { h: 0, rec: new Set(), j: 0 }; c.h += x.h; c.rec.add(x.rec); c.j++;
+    } else {
+      const it = NA[x.ci] = NA[x.ci] || { ci: x.ci, code: x.code, asso: x.a, zone: x.z, h: 0, first: x.d, last: x.d };
+      it.h += x.h; if (x.d < it.first) it.first = x.d; if (x.d > it.last) it.last = x.d;
+    }
+  });
+  Object.values(W).forEach(mm => { mm.src = [...mm.src].sort(); Object.values(mm.weeks).forEach(c => c.rec = [...c.rec].sort()); });
+  return { W, NA: Object.values(NA).sort((a, b) => a.first < b.first ? -1 : 1) };
+}
+if (false) module.exports = { P, ISO, addD, mon, isoWeek, norm, normCode, regC, exWin, inWin, missionWeeks, targets, realise, missionMetrics, computeAll, statusOf, attLevel, contrat, parseBulletins, aggregateBulletins, parseHeures, aggregateHeures, detectKind, resolveCI, prixMission, unitOf, TYPOS, remiseOfWeek };
+
+/* ===== Interface ===== */
+const S = { assos: {}, missions: {}, imports: {}, heures: {}, cfg: { grille: {}, mappings: {}, seuil: 5 }, heuresMeta: null,
+  year: 2026, ref: null, refAuto: true, tab: 'synthese', f: { asso: '', typo: '', region: '', st: 'actif', q: '' }, chartAsso: '', loaded: 0, canWrite: true };
+let db = null, downloads = null, model = null, dirty = true, pending = null;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf0 = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 });
+const nf1 = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
+const n0 = v => v === null || v === undefined || isNaN(v) ? '–' : nf0.format(Math.round(v));
+const n1 = v => v === null || v === undefined || isNaN(v) ? '–' : nf1.format(v);
+const eur = v => v === null || v === undefined ? '–' : nf0.format(Math.round(v)) + ' €';
+const pct = (a, b) => b > 0 ? Math.round(a / b * 100) + ' %' : '–';
+const sgn = v => (v > 0 ? '+' : '') + n0(v);
+const cls = v => v > 0.5 ? 'pos' : v < -0.5 ? 'neg' : 'mut';
+const dfr = iso => iso ? iso.slice(8, 10) + '/' + iso.slice(5, 7) + '/' + iso.slice(0, 4) : '';
+const wlab = w => 'S' + String(isoWeek(w)).padStart(2, '0') + ' · ' + w.slice(8, 10) + '/' + w.slice(5, 7);
+const ST = { avance: 'En avance', ok: 'Dans les clous', vigilance: 'À surveiller', retard: 'En retard', avenir: 'À venir', encours: 'En cours', terminee: 'Terminée', annulee: 'Annulée', hors: 'Hors période', gap: 'Données manquantes' };
+const pill = s => `<span class="pill p-${s}">${ST[s] || s}</span>`;
+const ATTK = { avance: 'cg', ok: 'co', vigilance: 'cw', retard: 'cb' };
+/* pastille d'atteinte : même calcul, mêmes couleurs partout */
+const att = (r, o, withE) => o > 0 ? `<span class="cbadge ${ATTK[attLevel(r, o, S.cfg.seuil)]}" title="Réalisé ${n0(r)} / objectif à date ${n0(o)}">${Math.round(r / o * 100)} %${withE ? ' · ' + sgn(r - o) : ''}</span>` : '<span class="mut">–</span>';
+const uLab = u => u === 'h' ? 'h' : 'PA';
+function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
+const today = () => ISO(Date.now());
+
+function defaultRef() {
+  let last = null; Object.values(S.imports).forEach(d => { if (!last || d.remise > last) last = d.remise; });
+  return addD(mon(last || today()), -7);
+}
+/* dernière semaine d'heures saisies (sans dépasser la semaine écoulée) */
+function defaultRefH() {
+  const cap = addD(mon(today()), -7); let last = null;
+  Object.values(S.heures).forEach(d => Object.entries((d && d.weeks) || {}).forEach(([w, v]) => { if (v && Number(v.h) > 0 && P(w) <= P(cap) && (!last || w > last)) last = w; }));
+  return last;
+}
+function getModel() {
+  if (S.refAuto || !S.ref) S.ref = defaultRef();
+  const rh = defaultRefH(); S.refH = S.refAuto && rh && P(rh) > P(S.ref) ? rh : S.ref;
+  if (dirty || !model) { model = computeAll(S, S.year, S.ref, S.refH); dirty = false; }
+  return model;
+}
+function invalidate() { dirty = true; render(); }
+
+/* ---------- rendu principal ---------- */
+function render() {
+  document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === S.tab ? 'true' : 'false'));
+  const yearSel = $('#year'); if (yearSel.value !== String(S.year)) yearSel.value = String(S.year);
+  renderRefSel();
+  const root = $('#view');
+  if (!db) { root.innerHTML = `<section class="blk empty">Les données ne sont pas accessibles : vérifiez la configuration Firebase et votre connexion.</section>`; return; }
+  if (S.loaded < 5) { root.innerHTML = `<section class="blk empty">Chargement des missions, des associations et des remises…</section>`; return; }
+  if (!Object.keys(S.missions).length && !Object.keys(S.assos).length) { root.innerHTML = `<section class="blk empty">Aucune donnée pour l'instant. Créez une association dans l'onglet Associations, ajoutez vos missions, puis importez l'export AlloHouston.</section>`; return; }
+  const M = getModel(); renderRefSel();
+  const v = { synthese: vSynthese, cadencier: vCadencier, missions: vMissions, assos: vAssos, import: vImport, export: vExport }[S.tab];
+  root.innerHTML = v(M);
+  if (S.tab === 'synthese') drawChart(M);
+}
+function renderRefSel() {
+  const hi = $('#refh'); if (hi) hi.textContent = S.refH && S.refH !== S.ref ? 'Heures : ' + wlab(S.refH) : '';
+  const sel = $('#ref'); const cur = S.ref || defaultRef();
+  const end = addD(mon(today()), 7); const opts = [];
+  for (let w = end, i = 0; i < 60; i++, w = addD(w, -7)) opts.push(w);
+  sel.innerHTML = `<option value="auto"${S.refAuto ? ' selected' : ''}>Bulletins · ${wlab(defaultRef())}</option>` + opts.map(w => `<option value="${w}"${!S.refAuto && w === cur ? ' selected' : ''}>${wlab(w)}</option>`).join('');
+}
+
+/* ---------- Synthèse ---------- */
+function totals(list, key) { const t = { prev: 0, prevAD: 0, reel: 0, A: 0, B: 0, rest: 0 }; list.forEach(x => { const u = x[key]; Object.keys(t).forEach(k => t[k] += u[k] || 0); }); return t; }
+function vSynthese(M) {
+  const AS = Object.values(M.assos).sort((a, b) => a.a.nom.localeCompare(b.a.nom));
+  const T = totals(AS, 'pa');
+  const objOf = x => { const c = x.c[x.unit]; return c ? { v: c, src: 'contrat' } : { v: x[x.unit].prev, src: 'planifié' }; };
+  const objPA = AS.reduce((s, x) => s + (x.c.pa || x.pa.prev), 0);
+  const gaps = M.MM.filter(x => x.gap && x.status !== 'annulee');
+  const R = M.R; const e = T.reel - T.prevAD;
+  let h = '';
+  if (R.cov && gaps.length) h += `<div class="banner"><b>Historique incomplet.</b> Les bulletins importés commencent la semaine du ${dfr(R.cov)}. ${gaps.length} mission${gaps.length > 1 ? 's' : ''} de l'exercice ${gaps.length > 1 ? 'ont' : 'a'} des semaines antérieures sans bulletins : leur retard est surestimé.</div>`;
+  if (R.unmatched.length) h += `<div class="banner"><b>${R.unmatched.reduce((s, g) => s + g.n, 0)} bulletins non rattachés à une mission.</b> <button class="btn sm" data-go="import">Les rattacher</button></div>`;
+  h += `<div class="kpis k3">
+    ${kpi('Objectif global', n0(objPA) + ' PA', `exercices ${S.year} · contrats, ou volume planifié si contrat non saisi`)}
+    ${kpi('Objectif à date', n0(T.prevAD) + ' PA', `${objPA > 0 ? Math.round(T.prevAD / objPA * 100) + ' % de l\'objectif global' : ''} · au ${dfr(addD(S.ref, 6))}`)}
+    ${kpi('Réalisé à date', n0(T.reel) + ' PA', 'bulletins remis aux associations', true)}
+    ${kpi(e < 0 ? 'Retard global' : 'Avance globale', `<span class="${T.prevAD > 0 ? ATTK[attLevel(T.reel, T.prevAD, S.cfg.seuil)] + 't' : ''}">${T.prevAD > 0 ? Math.round(T.reel / T.prevAD * 100) + ' %' : '–'}</span>`, `<span class="${cls(e)}">${sgn(e)} PA</span> par rapport à l'objectif à date`)}
+  </div>`;
+  h += `<section class="blk"><div class="row" style="justify-content:space-between"><div><h2>Courbe d'atterrissage</h2><p class="hint">Cumul hebdomadaire de l'objectif et du réalisé. La projection prolonge le réalisé au rythme observé.</p></div>
+    <label class="ctl">Association <select id="chartAsso"><option value="">Toutes (PA)</option>${AS.map(x => `<option value="${x.a.id}"${S.chartAsso === x.a.id ? ' selected' : ''}>${esc(x.a.nom)}</option>`).join('')}</select></label></div>
+    <div class="chart" id="chart"></div><div class="legend"><span><i style="background:var(--plan)"></i>Objectif cumulé</span><span><i style="background:var(--real)"></i>Réalisé cumulé</span><span><i style="background:var(--proj)"></i>Projection rythme réel</span><span><i style="background:var(--ink);width:2px;height:10px"></i>Semaine de référence</span></div></section>`;
+  h += `<section class="blk"><h2>Par association</h2><p class="hint">Chaque association dans son unité (PA ou heures) et sur son exercice. Cliquez sur une ligne pour voir ses missions.</p>
+    <div class="tw"><table class="assot"><thead><tr><th class="l">Association</th><th>Volume à faire</th><th>Objectif à date</th><th>Réalisé</th><th class="l">Atteinte à date</th><th>Avance / retard</th><th class="l">Statut</th></tr></thead><tbody>
+    ${AS.map(x => { const u = x[x.unit]; const o = objOf(x); const U = uLab(x.unit);
+      return `<tr tabindex="0" data-asso="${x.a.id}"><td class="l"><b>${esc(x.a.nom)}</b><span class="n2">exercice ${x.win.label} · ${x.unit === 'h' ? 'à l\'heure' : 'au PA'}</span></td>
+      <td>${n0(o.v)} ${U}${o.src === 'planifié' ? '<span class="n2">planifié · contrat à saisir</span>' : ''}</td><td>${n0(u.prevAD)} ${U}</td><td><b>${n0(u.reel)} ${U}</b></td>
+      <td class="l">${prog(u.reel, o.v || u.prev, u.prevAD)} ${att(u.reel, u.prevAD)}</td><td class="${cls(u.reel - u.prevAD)}"><b>${sgn(u.reel - u.prevAD)} ${U}</b></td><td class="l">${pill(assoStatus(x))}</td></tr>`; }).join('')}
+    </tbody><tfoot><tr><td class="l">Total (PA)</td><td>${n0(objPA)} PA</td><td>${n0(T.prevAD)} PA</td><td>${n0(T.reel)} PA</td><td class="l">${att(T.reel, T.prevAD)}</td><td class="${cls(T.reel - T.prevAD)}"><b>${sgn(T.reel - T.prevAD)} PA</b></td><td class="l">${pill(T.prevAD > 0 ? attLevel(T.reel, T.prevAD, S.cfg.seuil) : 'avenir')}</td></tr></tfoot></table></div>
+    <div class="legend" style="margin-top:10px"><span><i class="lg cg"></i>En avance ≥ ${100 + (S.cfg.seuil || 5)} %</span><span><i class="lg co"></i>Dans les clous</span><span><i class="lg cw"></i>À surveiller 75–${100 - (S.cfg.seuil || 5)} %</span><span><i class="lg cb"></i>En retard &lt; 75 %</span><span>Repère noir sur la barre : objectif à date</span></div></section>`;
+  h += planAction(M);
+  return h;
+}
+function assoStatus(x) {
+  const u = x[x.unit]; const ms = x.ms.filter(y => !y.m.recon && y.status !== 'annulee');
+  if (!ms.length || u.prevAD <= 0) return u.reel > 0 ? 'avance' : 'avenir';
+  if (ms.some(y => y.gap)) return 'gap';
+  return statusOf(u, S.cfg.seuil);
+}
+/* zones autorisées par association : { mode: 'toutes' | 'seulement' | 'sauf', liste: [noms] } */
+const ZONES_BASE = ['Réunion', 'Martinique', 'Guadeloupe', 'Guyane', 'Polynésie', 'Mayotte', 'Bretagne', 'Pays de la Loire', 'Mayenne', 'Normandie', 'Île-de-France', 'Occitanie', 'Nouvelle-Aquitaine', 'Auvergne-Rhône-Alpes', 'Haute-Savoie', 'Hauts-de-France', 'Grand Est', 'Provence-Alpes-Côte d\'Azur'];
+function zoneList() { const m = {}; [...ZONES_BASE, ...Object.values(S.missions).map(x => x.region)].forEach(z => { if (z && !m[regC(z)]) m[regC(z)] = z; }); return Object.values(m).sort((a, b) => a.localeCompare(b)); }
+function zoneOK(a, zone) { const zc = (a && a.zones) || {}; if (!zc.mode || zc.mode === 'toutes') return true; const inL = (zc.liste || []).some(z => regC(z) === regC(zone)); return zc.mode === 'seulement' ? inL : !inL; }
+function zoneTxt(a) { const zc = (a && a.zones) || {}; if (!zc.mode || zc.mode === 'toutes' || !(zc.liste || []).length) return 'toutes zones'; return (zc.mode === 'seulement' ? 'uniquement ' : 'sauf ') + zc.liste.join(', '); }
+/* ---------- Plan d'action : recommandations calculées ---------- */
+function planAction(M) {
+  const ref = S.ref, seuil = S.cfg.seuil || 5;
+  const past = w => P(w) <= P(ref);
+  const pastX = (x, w) => P(w) <= P(x.ref || ref);
+  const weekly = (x, unit) => { const o = {}; if (unit === 'h') Object.keys(x.hw).forEach(w => { if (pastX(x, w)) o[w] = Number(x.hw[w].h) || 0; }); else x.entries.forEach(e => o[e.w] = (o[e.w] || 0) + e.n); return o; };
+  const recOf = (x, w) => ((x.hw[w] || {}).rec || []).length;
+  /* rythme par recruteur et par semaine, par zone (toutes assos, exercice affiché) */
+  const zone = {};
+  M.MM.forEach(x => { if (x.m.recon) return; const z = regC(x.m.region); const Z = zone[z] = zone[z] || { name: x.m.region, pa: 0, rw: 0, recent: [], last: null };
+    const wk = weekly(x, 'pa'); Object.keys(x.hw).forEach(w => { if (!past(w)) return; const r = recOf(x, w); if (r) { Z.rw += r; Z.pa += wk[w] || 0; if (!Z.last || w > Z.last) Z.last = w; if (P(w) > P(ref) - 84 * DAY) Z.recent.push(r); } }); });
+  Object.values(zone).forEach(Z => { Z.prod = Z.rw ? Z.pa / Z.rw : null; Z.team = Z.recent.length ? Math.round(Z.recent.reduce((s, v) => s + v, 0) / Z.recent.length) : null; });
+  const zoneProd = m => (zone[regC(m.region)] || {}).prod;
+  const L = []; const U = a => a.remu === 'H' ? 'h' : 'PA';
+  /* 1. missions en cours en retard : renfort ou prolongation */
+  M.MM.filter(x => x.status === 'encours' && !x.m.recon).forEach(x => {
+    const unit = x.a.remu === 'H' ? 'h' : 'pa'; const u = x[unit]; if (u.prevAD <= 0) return;
+    const lv = attLevel(u.reel, u.prevAD, seuil); if (lv !== 'vigilance' && lv !== 'retard') return;
+    const wk = weekly(x, unit); const lastW = x.ws.filter(w => pastX(x, w)).slice(-3);
+    const pace = lastW.length ? lastW.reduce((s, w) => s + (wk[w] || 0), 0) / lastW.length : 0;
+    const recs = lastW.map(w => recOf(x, w)).filter(Boolean); const team = recs.length ? Math.round(recs.reduce((s, v) => s + v, 0) / recs.length) : null;
+    const reste = Math.max(0, u.prev - u.reel); const shortfall = reste - pace * u.remW; if (shortfall <= 0.5 || !u.remW) return;
+    if (x.pa.reel === 0 && x.h.reel === 0) { L.push({ imp: shortfall * 0.5, kind: 'verif', html: `<b>${esc(x.m.region)} · ${esc(x.a.nom)}</b> <a href="#" data-mission="${x.m.id}">${esc(x.m.id)}</a> — la mission aurait dû démarrer le ${dfr(x.m.start)} mais aucun bulletin ni aucune heure n'est remonté. Leviers : <b>vérifier le démarrage et la saisie dans AlloHouston</b> ; si la mission est décalée, <b>mettre à jour ses dates</b> pour que l'objectif (${n0(u.prev)} ${U(x.a)}) soit réparti sur les bonnes semaines.` }); return; }
+    const need = reste / u.remW; const perRec = team && pace ? pace / team : (unit === 'h' ? 35 : (x.prodJ ? x.prodJ * 5 : zoneProd(x.m)));
+    const add = perRec ? Math.max(1, Math.ceil(need / perRec - (team || 0))) : null;
+    const extW = pace > 0 ? Math.ceil(reste / pace - u.remW) : null;
+    const opts = [];
+    if (add) opts.push(`<b>renforcer l'équipe de ${add} recruteur${add > 1 ? 's' : ''}</b>${team ? ` (${team} actuellement)` : ''} dès la semaine prochaine`);
+    if (extW && extW > 0 && extW <= 6) opts.push(`<b>prolonger la mission de ${extW} semaine${extW > 1 ? 's' : ''}</b> au rythme actuel`);
+    L.push({ imp: shortfall, kind: 'renfort', html: `<b>${esc(x.m.region)} · ${esc(x.a.nom)}</b> <a href="#" data-mission="${x.m.id}">${esc(x.m.id)}</a> ${att(u.reel, u.prevAD)} — il reste ${n0(reste)} ${U(x.a)} à faire en ${u.remW} semaine${u.remW > 1 ? 's' : ''} (${n0(need)}/sem.), le rythme des 3 dernières semaines est de ${n0(pace)}/sem. Sans action, il manquera environ ${n0(shortfall)} ${U(x.a)}. Leviers : ${opts.join(' ou ') || 'revoir l\'objectif de la mission'}.` });
+  });
+  /* 2. associations dont l'atterrissage n'atteint pas l'objectif : report sur missions à venir et semaines libres */
+  const horizonEnd = addD(ref, 7 * 12);
+  const occ = {}; Object.values(S.missions).forEach(m => { if (m.statut === 'annulee' || m.recon) return; missionWeeks(m).forEach(w => { const z = regC(m.region); (occ[z] = occ[z] || new Set()).add(w); }); });
+  const freeRuns = {}; Object.entries(zone).forEach(([z, Z]) => { if (!Z.team || !Z.last || P(Z.last) < P(ref) - 84 * DAY) return; const runs = []; let cur = null;
+    for (let w = addD(ref, 14); P(w) <= P(horizonEnd); w = addD(w, 7)) { const free = !(occ[z] && occ[z].has(w)) && !/-12-2[2-9]|-12-3|-01-0[1-4]/.test(w.slice(4)) ; if (free) { if (!cur) cur = { from: w, n: 0 }; cur.n++; cur.to = w; } else if (cur) { runs.push(cur); cur = null; } }
+    if (cur) runs.push(cur); freeRuns[z] = runs.filter(r => r.n >= 2); });
+  const used = new Set();
+  Object.values(M.assos).forEach(x => {
+    const unit = x.unit; const u = x[unit]; const obj = x.c[unit] || u.prev; const manque = obj - u.B; if (!obj || manque <= Math.max(10, obj * 0.02)) return;
+    const winEnd = x.win.e; const lev = [];
+    const fut = x.ms.filter(y => (y.status === 'avenir' || y.status === 'encours') && !y.m.recon && y[unit].rest > 0);
+    let reste = manque;
+    if (fut.length) { const tot = fut.reduce((s, y) => s + y[unit].rest, 0); const absorb = Math.min(reste, tot * 0.3); const pctUp = Math.round(absorb / tot * 100);
+      if (pctUp >= 1) { reste -= absorb;
+        const adds = fut.map(y => { const pr = zoneProd(y.m); const ww = Math.max(1, y[unit].remW); return pr && unit === 'pa' ? `+${Math.max(1, Math.ceil(absorb * y[unit].rest / tot / ww / pr))} en ${esc(y.m.region)}` : ''; }).filter(Boolean);
+        lev.push(`<b>relever de ${pctUp} % l'objectif restant des missions ${fut.some(y => y.status === 'encours') ? 'en cours et à venir' : 'à venir'}</b> (${fut.map(y => `<a href="#" data-mission="${y.m.id}">${esc(y.m.region)} ${dfr(y.m.start).slice(0, 5)}</a>`).join(', ')}), soit ≈ ${n0(absorb)} ${uLab(unit)}${adds.length ? `, en renforçant les équipes de ${adds.join(', ')} recruteur(s)` : ''}`); } }
+    const zonesAsso = new Set(Object.values(S.missions).filter(m => m.asso === x.a.id).map(m => regC(m.region)));
+    const slots = []; Object.entries(freeRuns).forEach(([z, runs]) => runs.forEach(r => { const k = z + r.from; if (used.has(k) || P(r.from) >= winEnd || !zoneOK(x.a, zone[z].name)) return; const Z = zone[z]; const nW = Math.min(r.n, Math.round((winEnd - P(r.from)) / (7 * DAY))); if (nW < 2) return; const cap = Z.prod && Z.team ? Z.prod * Z.team * nW : null; slots.push({ z, k, r, nW, cap, known: zonesAsso.has(z), Z }); }));
+    slots.sort((a, b) => (b.known - a.known) || ((b.cap || 0) - (a.cap || 0)));
+    const picks = [];
+    for (const s of slots) { if (reste <= 0 || picks.length >= 2) break; picks.push(s); used.add(s.k); reste -= s.cap || 0; }
+    if (picks.length && unit === 'pa') lev.push(`<b>basculer sur des semaines libres</b> : ${picks.map(s => `${esc(s.Z.name)} S${isoWeek(s.r.from)}–S${isoWeek(addD(s.r.from, 7 * (s.nW - 1)))} (${s.nW} sem., équipe habituelle de ${s.Z.team}${s.cap ? `, potentiel ≈ ${n0(s.cap)} PA` : ''}${s.known ? '' : ((x.a.zones || {}).mode && x.a.zones.mode !== 'toutes' ? ', zone autorisée, nouvelle pour cette asso' : ', zone nouvelle pour cette asso : vérifier qu\'elle est autorisée')})`).join(' ; ')}`);
+    if (reste > Math.max(10, obj * 0.02)) {
+      const cand = Object.entries(zone).filter(([z, Z]) => Z.prod && Z.team && zoneOK(x.a, Z.name)).map(([z, Z]) => ({ z, Z, known: zonesAsso.has(z) }));
+      cand.sort((p, q) => (q.known - p.known) || (q.Z.prod - p.Z.prod)); const best = cand[0];
+      const wLeft = Math.round((winEnd - P(addD(ref, 14))) / (7 * DAY)); const wks = Math.max(2, Math.min(6, wLeft));
+      const team = best && unit === 'pa' ? Math.ceil(reste / (best.Z.prod * wks)) : null;
+      lev.push(`<b>${lev.length ? 'pour le solde (≈ ' + n0(reste) + ' ' + uLab(unit) + '), ' : ''}créer une mission supplémentaire</b>${team ? ` : environ ${team} recruteurs pendant ${wks} semaines en ${esc(best.Z.name)} (${best.known ? 'zone déjà travaillée pour cette asso' : 'zone la plus productive'}, ${n1(best.Z.prod)} PA/recruteur/sem.)` : ''}${wLeft < 4 ? ', ou négocier le report du solde sur l\'exercice suivant (moins de 4 semaines restantes)' : ', ou négocier le report sur l\'exercice suivant'}`); }
+    L.push({ imp: manque, kind: 'asso', html: `<b>${esc(x.a.nom)}</b> (exercice ${x.win.label}) — atterrissage au rythme actuel ${n0(u.B)} ${uLab(unit)} pour ${n0(obj)} ${x.c[unit] ? 'contractuels' : 'planifiés'} : il manque environ <b>${n0(manque)} ${uLab(unit)}</b>. Leviers : ${lev.join(' ; ')}.` });
+  });
+  /* 3. missions qui vont dépasser l'objectif : redéployer */
+  M.MM.filter(x => x.status === 'encours' && !x.m.recon).forEach(x => { const unit = x.a.remu === 'H' ? 'h' : 'pa'; const u = x[unit]; if (u.prevAD <= 0 || attLevel(u.reel, u.prevAD, seuil) !== 'avance') return;
+    const over = u.B - u.prev; if (over < 10) return;
+    const wk = weekly(x, unit); const lastW = x.ws.filter(w => pastX(x, w)).slice(-3); const pace = lastW.length ? lastW.reduce((s, w) => s + (wk[w] || 0), 0) / lastW.length : 0;
+    const wDone = pace > 0 ? Math.ceil(Math.max(0, u.prev - u.reel) / pace) : null; const endW = wDone !== null ? addD(x.ref || ref, 7 * wDone) : null;
+    L.push({ imp: over * 0.6, kind: 'avance', html: `<b>${esc(x.m.region)} · ${esc(x.a.nom)}</b> <a href="#" data-mission="${x.m.id}">${esc(x.m.id)}</a> ${att(u.reel, u.prevAD)} — l'objectif de ${n0(u.prev)} ${U(x.a)} sera atteint ${endW && wDone > 0 ? `vers la S${isoWeek(endW)}` : 'dès maintenant'}, soit environ ${n0(over)} ${U(x.a)} au-delà en fin de mission. Leviers : <b>vérifier avec l'association si le dépassement est accepté</b>, sinon <b>libérer l'équipe plus tôt</b> et la redéployer sur une asso en retard.` });
+  });
+  const noC = Object.values(M.assos).filter(x => !x.c[x.unit] && x.ms.some(y => !y.m.recon));
+  L.sort((a, b) => b.imp - a.imp);
+  const ICON = { renfort: 'Renfort', asso: 'Rattrapage', avance: 'Avance', verif: 'À vérifier' };
+  return `<section class="blk"><h2>Plan d'action</h2><p class="hint">Recommandations calculées à partir du réalisé, du rythme des dernières semaines et de la productivité observée par zone (PA par recruteur et par semaine). Classées par volume en jeu. À valider avec vos contraintes terrain : contraintes de zone des assos, disponibilité des équipes, congés.</p>
+  ${L.length ? `<ol class="plan">${L.slice(0, 10).map(l => `<li><span class="tag t-${l.kind}">${ICON[l.kind]}</span> ${l.html}</li>`).join('')}</ol>` : '<p class="mut">Aucun écart significatif à rattraper.</p>'}
+  ${noC.length ? `<p class="hint" style="margin-top:10px">Contrat non saisi pour ${noC.map(x => esc(x.a.nom)).join(', ')} : le rattrapage est calculé sur le volume planifié. <button class="btn sm" data-go="assos">Saisir les contrats</button></p>` : ''}
+  <details style="margin-top:10px"><summary>Productivité de référence par zone</summary><div class="tw" style="margin-top:8px"><table><thead><tr><th class="l">Zone</th><th>PA / recruteur / semaine</th><th>Équipe habituelle</th><th class="l">Dernière semaine travaillée</th></tr></thead><tbody>
+  ${Object.values(zone).filter(Z => Z.prod).sort((a, b) => b.prod - a.prod).map(Z => `<tr><td class="l">${esc(Z.name)}</td><td>${n1(Z.prod)}</td><td>${Z.team || '–'}</td><td class="l">${Z.last ? wlab(Z.last) : '–'}</td></tr>`).join('')}</tbody></table></div></details></section>`;
+}
+function kpi(l, v, s, hl) { return `<div class="kpi${hl ? ' hl' : ''}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`; }
+function prog(reel, prev, prevAD) {
+  if (!prev) return '<span class="prog"></span>';
+  const w = Math.min(100, reel / prev * 100), m = Math.min(100, prevAD / prev * 100); const lv = prevAD > 0 ? attLevel(reel, prevAD, S.cfg.seuil) : 'ok';
+  return `<span class="prog" title="Réalisé ${n0(reel)} / prévu total ${n0(prev)}"><b class="b-${lv}" style="width:${w}%"></b><s style="left:calc(${m}% - 1px)"></s></span>`;
+}
+
+/* ---------- Graphique cumul ---------- */
+function drawChart(M) {
+  const el = $('#chart'); if (!el) return;
+  const list = M.MM.filter(x => !S.chartAsso || x.m.asso === S.chartAsso);
+  const unit = S.chartAsso ? (M.assos[S.chartAsso] || {}).unit || 'pa' : 'pa';
+  const plan = {}, real = {}; let ref = unit === 'h' ? S.refH : S.ref;
+  list.forEach(x => {
+    const t = unit === 'h' ? x.tH : x.tP; x.ws.forEach(w => plan[w] = (plan[w] || 0) + (t[w] || 0));
+    if (unit === 'h') Object.keys(x.hw).forEach(w => { if (P(w) <= P(ref) && inWin(x.win, remiseOfWeek(w))) real[w] = (real[w] || 0) + (Number(x.hw[w].h) || 0); });
+    else x.entries.forEach(e => real[e.w] = (real[e.w] || 0) + e.n);
+  });
+  const ws = [...new Set([...Object.keys(plan), ...Object.keys(real)])].sort();
+  if (!ws.length) { el.innerHTML = '<p class="empty">Aucune semaine sur cet exercice.</p>'; return; }
+  const all = []; for (let w = ws[0]; P(w) <= P(ws[ws.length - 1]); w = addD(w, 7)) all.push(w);
+  let cp = 0, cr = 0; const sp = [], sr = [];
+  all.forEach(w => { cp += plan[w] || 0; sp.push(cp); if (P(w) <= P(ref)) { cr += real[w] || 0; sr.push(cr); } });
+  const pAD = all.reduce((s, w, i) => P(w) <= P(ref) ? sp[i] : s, 0);
+  const ratio = pAD > 0 ? cr / pAD : 1; const sb = [];
+  let lastI = sr.length - 1; if (lastI >= 0) all.forEach((w, i) => { if (i >= lastI) sb.push([i, cr + (sp[i] - sp[lastI]) * ratio]); });
+  const W = Math.max(640, el.clientWidth || 900), H = 260, L = 52, Rm = 16, Tm = 12, B = 30;
+  const max = Math.max(cp, cr, ...sb.map(p => p[1]), 1) * 1.05;
+  const x = i => L + (all.length > 1 ? i / (all.length - 1) : 0.5) * (W - L - Rm), y = v => Tm + (1 - v / max) * (H - Tm - B);
+  const step = niceStep(max / 4); let g = '';
+  for (let v = 0; v <= max; v += step) g += `<line x1="${L}" x2="${W - Rm}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line2)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${nf0.format(v)}</text>`;
+  const every = Math.max(1, Math.ceil(all.length / 12));
+  all.forEach((w, i) => { if (i % every === 0) g += `<text x="${x(i)}" y="${H - 10}" text-anchor="middle">${'S' + isoWeek(w)}</text>`; });
+  const path = pts => pts.map((p, i) => (i ? 'L' : 'M') + x(p[0]).toFixed(1) + ' ' + y(p[1]).toFixed(1)).join(' ');
+  const ri = all.findIndex(w => w === ref);
+  const area = sr.length ? `<path d="${path(sr.map((v, i) => [i, v]))} L${x(sr.length - 1)} ${y(0)} L${x(0)} ${y(0)} Z" fill="var(--real)" opacity=".10"/>` : '';
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cumul prévu et réalisé">${g}
+    ${ri >= 0 ? `<line x1="${x(ri)}" x2="${x(ri)}" y1="${Tm}" y2="${H - B}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 3"/>` : ''}
+    <path d="${path(sp.map((v, i) => [i, v]))}" fill="none" stroke="var(--plan)" stroke-width="2.5"/>
+    ${area}<path d="${path(sr.map((v, i) => [i, v]))}" fill="none" stroke="var(--real)" stroke-width="2.5"/>
+    ${sb.length > 1 ? `<path d="${path(sb)}" fill="none" stroke="var(--proj)" stroke-width="2" stroke-dasharray="6 4"/>` : ''}
+    ${sr.length ? `<circle cx="${x(sr.length - 1)}" cy="${y(cr)}" r="4" fill="var(--real)"/><text x="${x(sr.length - 1) + 8}" y="${y(cr) - 6}" style="fill:var(--ink);font-weight:600">${nf0.format(cr)}</text>` : ''}
+    <text x="${x(all.length - 1)}" y="${y(cp) - 6}" text-anchor="end" style="fill:var(--ink)">${nf0.format(cp)} prévus</text></svg>`;
+}
+function niceStep(v) { const p = Math.pow(10, Math.floor(Math.log10(v || 1))); const n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
+
+
+/* ---------- Cadencier ---------- */
+S.cad = { per: 'exercice', unit: 'pa', mode: 'mix' };
+function vCadencier(M) {
+  const f = S.f, c = S.cad, Y = S.year, exo = c.per === 'exercice';
+  const R = M.R, unitH = c.unit === 'h', U = unitH ? 'h' : 'PA'; const ref = unitH ? S.refH : S.ref;
+  const isPast = w => P(w) <= P(ref);
+  const AS = Object.values(S.assos).sort((a, b) => a.nom.localeCompare(b.nom));
+  const rows = []; let weeks = [];
+  const okF = m => !((f.asso && m.asso !== f.asso) || (f.typo && m.typo !== f.typo) || (f.region && m.region !== f.region));
+  if (exo) {
+    /* même périmètre et mêmes chiffres que la Synthèse : exercice de chaque asso, semaine de référence de l'asso */
+    M.MM.forEach(x => {
+      if (!okF(x.m)) return;
+      const u = unitH ? x.h : x.pa; const t = unitH ? x.tH : x.tP; const obj = {}, real = {};
+      if (x.m.statut !== 'annulee') x.ws.forEach(w => { if (t[w]) obj[w] = t[w]; });
+      if (unitH) Object.keys(x.hw).forEach(w => { if (P(w) <= P(x.ref) && inWin(x.win, remiseOfWeek(w))) real[w] = Number(x.hw[w].h) || 0; });
+      else x.entries.forEach(e => real[e.w] = (real[e.w] || 0) + e.n);
+      if (!Object.keys(obj).length && !Object.keys(real).length) return;
+      rows.push({ m: x.m, obj, real, ref: x.ref, st: { oAD: u.prevAD, oT: u.prev, r: u.reel } });
+    });
+    const all = rows.flatMap(x => [...Object.keys(x.obj), ...Object.keys(x.real)]).sort();
+    if (all.length) for (let w = all[0]; P(w) <= P(all[all.length - 1]); w = addD(w, 7)) weeks.push(w);
+  } else {
+    const from = c.per === 'civil' ? mon(Y + '-01-01') : mon(Y + '-06-01');
+    const to = c.per === 'civil' ? mon(Y + '-12-31') : mon((Y + 1) + '-05-31');
+    for (let w = from; P(w) <= P(to); w = addD(w, 7)) weeks.push(w);
+    Object.values(S.missions).forEach(m => {
+      if (!okF(m)) return;
+      const real = {}; if (unitH) { const hw = (S.heures[m.id] || {}).weeks || {}; Object.keys(hw).forEach(w => real[w] = Number(hw[w].h) || 0); } else (R.byM[m.id] || []).forEach(e => real[e.w] = (real[e.w] || 0) + e.n);
+      let obj = m.statut === 'annulee' ? {} : targets(m, unitH ? 'h' : 'pa');
+      if (m.recon) obj = Object.assign({}, real);
+      const any = weeks.some(w => obj[w] || real[w]); if (!any) return;
+      const st = { oAD: 0, oT: 0, r: 0 };
+      weeks.forEach(w => { st.oT += obj[w] || 0; if (isPast(w)) { st.oAD += obj[w] || 0; st.r += real[w] || 0; } });
+      rows.push({ m, obj, real, ref, st });
+    });
+  }
+  const ORDER = ['DROM-COM', 'Itinérante', 'Fixe', 'Hybride', 'Porte-à-Porte', 'Sites privés'];
+  rows.sort((a, b) => (ORDER.indexOf(a.m.typo) - ORDER.indexOf(b.m.typo)) || a.m.region.localeCompare(b.m.region) || (a.m.start < b.m.start ? -1 : 1));
+  const seuil = (S.cfg.seuil || 5) / 100;
+  const klass = (o, r) => o <= 0 ? 'cx' : ATTK[attLevel(r, o, S.cfg.seuil)];
+  const cell = (o, r, w, pr) => {
+    if (!o && !r) return '<td class="cz"></td>';
+    if (P(w) > P(pr || ref)) return `<td class="cz fut" title="Objectif ${n1(o)}">${c.mode === 'real' ? '' : n0(o)}</td>`;
+    const txt = c.mode === 'obj' ? n0(o) : n0(r);
+    return `<td class="cz ${klass(o, r)}" title="${wlab(w)} · réalisé ${n0(r)} / objectif ${n1(o)}">${txt}</td>`;
+  };
+  const badge = (st, recon) => {
+    if (recon) return '<span class="cbadge cx">reconstituée</span>';
+    if (st.oAD <= 0) return st.oT > 0 ? '<span class="cbadge fut">à venir</span>' : '';
+    const e = st.r - st.oAD;
+    return `<span class="cbadge ${klass(st.oAD, st.r)}">${Math.round(st.r / st.oAD * 100)} % · ${sgn(e)}</span>`;
+  };
+  const sumCols = (st, recon, bold) => {
+    const e = st.r - st.oAD; const has = st.oAD > 0 && !recon;
+    return `<td class="cs first">${n0(st.oAD)}</td><td class="cs">${bold ? '<b>' + n0(st.r) + '</b>' : n0(st.r)}</td><td class="cs ${has ? cls(e) : 'mut'}">${has ? sgn(e) : '–'}</td><td class="cs">${has ? `<span class="cbadge ${klass(st.oAD, st.r)}">${Math.round(st.r / st.oAD * 100)} %</span>` : '–'}</td><td class="cs">${n0(st.oT)}</td>`;
+  };
+  const months = []; weeks.forEach(w => { const mo = w.slice(0, 7); const last = months[months.length - 1]; if (last && last.mo === mo) last.n++; else months.push({ mo, n: 1 }); });
+  const MN = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  const add = (a, b) => { a.oAD += b.oAD; a.oT += b.oT; a.r += b.r; };
+  let body = '', grp = null; const tot = {}, totO = {}; let gO = {}, gR = {}, gS = null; const T = { oAD: 0, oT: 0, r: 0 }, TP = { oAD: 0, oT: 0, r: 0 };
+  let nAv = 0, vAv = 0, nRe = 0, vRe = 0, nOk = 0;
+  const flush = () => { if (grp === null) return; body += `<tr class="sub"><td class="cl">Total ${esc(grp)} ${badge(gS.p, false)}</td>${weeks.map(w => `<td class="cz">${gR[w] || gO[w] ? (isPast(w) ? n0(gR[w] || 0) : `<span class="mut">${n0(gO[w] || 0)}</span>`) : ''}</td>`).join('')}${sumCols(gS.p, false, true)}</tr>`; };
+  rows.forEach(x => {
+    if (x.m.typo !== grp) { flush(); grp = x.m.typo; gO = {}; gR = {}; gS = { p: { oAD: 0, oT: 0, r: 0 } }; body += `<tr class="grp"><td class="cl" colspan="${weeks.length + 6}">${esc(grp || '—')}</td></tr>`; }
+    weeks.forEach(w => { gO[w] = (gO[w] || 0) + (x.obj[w] || 0); gR[w] = (gR[w] || 0) + (x.real[w] || 0); totO[w] = (totO[w] || 0) + (x.obj[w] || 0); tot[w] = (tot[w] || 0) + (x.real[w] || 0); });
+    add(gS.p, x.st); add(T, x.st);
+    if (exo || (!x.m.recon && x.st.oAD > 0)) add(TP, x.st);
+    if (!x.m.recon && x.st.oAD > 0) { const e = x.st.r - x.st.oAD, q = x.st.r / x.st.oAD;
+      if (q >= 1 + seuil) { nAv++; vAv += e; } else if (q < 1 - seuil) { nRe++; vRe += e; } else nOk++; }
+    body += `<tr tabindex="0" data-mission="${x.m.id}"><td class="cl"><b>${esc(x.m.region)}</b> <span class="mut">${esc((S.assos[x.m.asso] || {}).nom || x.m.asso)}</span><span class="n2">${esc(x.m.id)}${x.m.statut === 'annulee' ? ' · annulée' : ''} ${badge(x.st, x.m.recon)}</span></td>${weeks.map(w => cell(x.obj[w] || 0, x.real[w] || 0, w, x.ref)).join('')}${sumCols(x.st, x.m.recon, true)}</tr>`;
+  });
+  flush();
+  body += `<tr class="tot"><td class="cl">Total réalisé</td>${weeks.map(w => `<td class="cz">${isPast(w) ? n0(tot[w] || 0) : ''}</td>`).join('')}${sumCols(T, false, true)}</tr>`;
+  body += `<tr class="tot"><td class="cl">Total objectif</td>${weeks.map(w => `<td class="cz">${n0(totO[w] || 0)}</td>`).join('')}<td class="cs first" colspan="5"></td></tr>`;
+  const eG = TP.r - TP.oAD;
+  const kp = `<div class="kpis" style="margin-bottom:12px">
+    ${kpi('Objectif à date', n0(TP.oAD) + ' ' + U, 'missions planifiées, semaines écoulées')}
+    ${kpi('Réalisé à date', n0(TP.r) + ' ' + U, TP.oAD ? Math.round(TP.r / TP.oAD * 100) + ' % d\'atteinte' : '–', true)}
+    ${kpi('Écart global', `<span class="${cls(eG)}">${sgn(eG)}</span>`, eG < 0 ? U + ' de retard cumulé' : U + ' d\'avance cumulée')}
+    ${kpi('Missions en avance', String(nAv), nAv ? `<span class="pos">${sgn(vAv)} ${U}</span> au-dessus de l'objectif` : 'aucune')}
+    ${kpi('Dans les clous', String(nOk), `± ${S.cfg.seuil || 5} % de l'objectif`)}
+    ${kpi('Missions en retard', String(nRe), nRe ? `<span class="neg">${sgn(vRe)} ${U}</span> sous l'objectif` : 'aucune')}
+  </div>`;
+  return `<section class="blk"><div class="row" style="justify-content:space-between"><div><h2>Cadencier ${exo ? '· exercices ' + Y : c.per === 'civil' ? Y : Y + '-' + String((Y + 1) % 100).padStart(2, '0')}</h2><p class="hint">Une ligne par mission, une colonne par semaine. Semaines passées : réalisé, coloré selon l'objectif de la semaine. Semaines à venir : objectif en gris. Sous chaque mission : % d'atteinte et écart à date. Les colonnes de droite récapitulent la période affichée. Cliquez sur une ligne pour ajuster la mission.</p></div></div>
+  <div class="row" style="margin-bottom:10px">
+   <select data-cad="per"><option value="exercice"${exo ? ' selected' : ''}>Exercice de chaque asso (comme la Synthèse)</option><option value="civil"${c.per === 'civil' ? ' selected' : ''}>Janvier → décembre ${Y}</option><option value="decale"${c.per === 'decale' ? ' selected' : ''}>Juin ${Y} → mai ${Y + 1}</option></select>
+   <select data-cad="unit"><option value="pa"${c.unit === 'pa' ? ' selected' : ''}>Bulletins (PA)</option><option value="h"${c.unit === 'h' ? ' selected' : ''}>Heures</option></select>
+   <select data-cad="mode"><option value="mix"${c.mode === 'mix' ? ' selected' : ''}>Réalisé passé + objectif à venir</option><option value="real"${c.mode === 'real' ? ' selected' : ''}>Réalisé uniquement</option><option value="obj"${c.mode === 'obj' ? ' selected' : ''}>Objectifs uniquement</option></select>
+   <select data-f="asso"><option value="">Toutes les associations</option>${AS.map(a => `<option value="${a.id}"${f.asso === a.id ? ' selected' : ''}>${esc(a.nom)}</option>`).join('')}</select>
+   <select data-f="typo"><option value="">Toutes typologies</option>${TYPOS.map(t => `<option${f.typo === t ? ' selected' : ''}>${t}</option>`).join('')}</select>
+   <select data-f="region"><option value="">Toutes zones</option>${[...new Set(Object.values(S.missions).map(m => m.region).filter(Boolean))].sort((a, b) => a.localeCompare(b)).map(t => `<option${f.region === t ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>
+   ${f.asso || f.typo || f.region ? '<button class="btn sm" data-clearf>Effacer les filtres</button>' : ''}
+  </div>
+  ${kp}
+  <div class="legend" style="margin-bottom:10px"><span><i class="lg cg"></i>En avance : plus de ${100 + (S.cfg.seuil || 5)} %</span><span><i class="lg co"></i>Dans les clous (± ${S.cfg.seuil || 5} %)</span><span><i class="lg cw"></i>À surveiller : 75 à ${100 - (S.cfg.seuil || 5)} %</span><span><i class="lg cb"></i>En retard : moins de 75 %</span><span><i class="lg fut"></i>Objectif à venir</span></div>
+  <div class="tw cad"><table><thead><tr><th class="cl"></th>${months.map(mm => `<th colspan="${mm.n}" class="mo">${MN[+mm.mo.slice(5, 7) - 1]} ${mm.mo.slice(2, 4)}</th>`).join('')}<th colspan="5" class="mo cs first">Récapitulatif à date</th></tr>
+  <tr><th class="cl">Mission</th>${weeks.map(w => `<th class="cz${w === ref ? ' now' : ''}" title="Semaine du ${dfr(w)}">${isoWeek(w)}</th>`).join('')}<th class="cs first">Obj. à date</th><th class="cs">Réalisé</th><th class="cs">Écart</th><th class="cs">Atteinte</th><th class="cs">Obj. période</th></tr></thead><tbody>${body}</tbody></table></div>
+  <p class="hint" style="margin-top:8px">${exo ? 'Vue « exercice » : chaque association sur son propre exercice (CARE et Oxfam de juin à mai), avec la même semaine de référence que la Synthèse : les totaux sont identiques. ' : 'Vue calendaire : toutes les semaines de la période, quel que soit l\'exercice de l\'association ; les totaux peuvent différer de la Synthèse. '}Les missions reconstituées (objectif = réalisé) ne sont pas comptées comme en avance ou en retard.</p></section>`;
+}
+
+/* ---------- Missions ---------- */
+function vMissions(M) {
+  const f = S.f;
+  const AS = Object.values(S.assos).sort((a, b) => a.nom.localeCompare(b.nom));
+  const regions = [...new Set(M.MM.map(x => x.m.region))].sort();
+  let L = M.MM.filter(x => (!f.asso || x.m.asso === f.asso) && (!f.typo || x.m.typo === f.typo) && (!f.region || x.m.region === f.region) && (!f.st || x.status === f.st || (f.st === 'actif' && (x.status === 'encours' || (x.status === 'terminee' && !x.m.recon && x.ws.length && P(x.ws[x.ws.length - 1]) >= P(x.ref) - 7 * DAY)))) && (!f.q || norm(x.m.id + ' ' + (x.m.codes || []).join(' ') + ' ' + x.m.region).includes(norm(f.q))));
+  L.sort((a, b) => (a.m.start || '') < (b.m.start || '') ? -1 : 1);
+  const T = totals(L, 'pa');
+  return `<section class="blk"><div class="row" style="justify-content:space-between"><div><h2>Missions · exercice ${S.year}</h2><p class="hint">Une mission compte dans l'exercice de sa date de remise (jeudi suivant la semaine travaillée). Cliquez pour modifier les dates, le volume et la répartition semaine par semaine.</p><div class="legend" style="margin:6px 0 10px"><span>Atteinte = réalisé ÷ objectif à date :</span><span><i class="lg cg"></i>En avance ≥ ${100 + (S.cfg.seuil || 5)} %</span><span><i class="lg co"></i>Dans les clous</span><span><i class="lg cw"></i>À surveiller 75–${100 - (S.cfg.seuil || 5)} %</span><span><i class="lg cb"></i>En retard &lt; 75 %</span></div></div>
+  ${S.canWrite ? '<button class="btn pri" data-new-mission>+ Nouvelle mission</button>' : ''}</div>
+  <div class="row" style="margin-bottom:12px">
+   <select data-f="asso"><option value="">Toutes les associations</option>${AS.map(a => `<option value="${a.id}"${f.asso === a.id ? ' selected' : ''}>${esc(a.nom)}</option>`).join('')}</select>
+   <select data-f="typo"><option value="">Toutes typologies</option>${TYPOS.map(t => `<option${f.typo === t ? ' selected' : ''}>${t}</option>`).join('')}</select>
+   <select data-f="region"><option value="">Toutes régions</option>${regions.map(t => `<option${f.region === t ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>
+   <select data-f="st"><option value="actif"${f.st === 'actif' ? ' selected' : ''}>En cours + terminées depuis 2 sem.</option><option value="">Tous statuts</option>${['encours', 'avenir', 'terminee', 'annulee'].map(t => `<option value="${t}"${f.st === t ? ' selected' : ''}>${ST[t]}</option>`).join('')}</select>
+   <input type="text" id="fq" data-f="q" placeholder="Rechercher code, région…" value="${esc(f.q)}">
+   <span class="mut">${L.length} mission${L.length > 1 ? 's' : ''}</span></div>
+  <div class="tw"><table class="assot"><thead><tr><th class="l">Mission</th><th>Volume à faire</th><th>Objectif à date</th><th>Réalisé</th><th class="l">Atteinte à date</th><th>Avance / retard</th><th class="l">Statut</th></tr></thead><tbody>
+  ${L.map(x => { const unit = (S.assos[x.m.asso] || {}).remu === 'H' ? 'h' : 'pa'; const u = x[unit]; const U = uLab(unit);
+    const PER = { encours: 'en cours', terminee: 'terminée', avenir: 'à venir', annulee: 'annulée', hors: '' }[x.status] || '';
+    const st = x.status === 'annulee' ? 'annulee' : x.m.recon ? 'terminee' : u.prevAD <= 0 ? (u.reel > 0 ? 'avance' : 'avenir') : x.gap ? 'gap' : statusOf(u, S.cfg.seuil);
+    return `<tr tabindex="0" data-mission="${x.m.id}"><td class="l"><b>${esc(x.m.region)} · ${esc((S.assos[x.m.asso] || {}).nom || x.m.asso)}</b><span class="n2">${esc(x.m.id)} · ${esc(x.m.typo)} · ${dfr(x.m.start).slice(0, 5)} → ${dfr(x.m.end).slice(0, 5)} (${x.ws.length} sem., ${PER})</span></td>
+    <td>${n0(u.prev)} ${U}</td><td>${n0(u.prevAD)} ${U}</td><td><b>${n0(u.reel)} ${U}</b></td>
+    <td class="l">${x.m.recon ? '<span class="cbadge cx">reconstituée</span>' : prog(u.reel, u.prev, u.prevAD) + ' ' + att(u.reel, u.prevAD)}</td>
+    <td class="${x.m.recon || u.prevAD <= 0 ? 'mut' : cls(u.reel - u.prevAD)}">${x.m.recon || u.prevAD <= 0 ? '–' : `<b>${sgn(u.reel - u.prevAD)} ${U}</b>`}</td>
+    <td class="l">${pill(st)}</td></tr>`; }).join('')}</tbody>
+  <tfoot><tr><td class="l">Total (PA)</td><td>${n0(T.prev)} PA</td><td>${n0(T.prevAD)} PA</td><td>${n0(T.reel)} PA</td><td class="l">${att(T.reel, T.prevAD)}</td><td class="${cls(T.reel - T.prevAD)}"><b>${sgn(T.reel - T.prevAD)} PA</b></td><td class="l">${pill(T.prevAD > 0 ? attLevel(T.reel, T.prevAD, S.cfg.seuil) : 'avenir')}</td></tr></tfoot></table></div>
+  <p class="hint" style="margin-top:8px">Chaque mission dans l'unité de son association (PA ou heures). Le total est en PA, toutes missions filtrées. Le détail semaine par semaine, les heures et la productivité sont dans la fiche de la mission.</p></section>`;
+}
+
+/* ---------- Éditeur de mission ---------- */
+function openMission(id, preset) {
+  const isNew = !id; const m0 = isNew ? Object.assign({ id: '', asso: S.f.asso || '', codes: [], region: '', typo: 'DROM-COM', start: '', end: '', pa: null, h: null, statut: 'active', note: '', ov: {} }, preset || {}) : JSON.parse(JSON.stringify(S.missions[id]));
+  pending = { m: m0, isNew, hours: JSON.parse(JSON.stringify(((S.heures[m0.id] || {}).weeks) || {})), del: false };
+  drawMission();
+}
+function drawMission() {
+  const { m, isNew } = pending; const ro = !S.canWrite;
+  const M = getModel();
+  const x = isNew ? null : M.MM.find(z => z.m.id === m.id);
+  const ws = missionWeeks(m); const tP = targets(m, 'pa'), tH = targets(m, 'h');
+  const R = M.R; const real = {}; (R.byM[m.id] || []).forEach(e => real[e.w] = (real[e.w] || 0) + e.n);
+  const ovP = (m.ov && m.ov.pa) || {}, ovH = (m.ov && m.ov.h) || {};
+  const AS = Object.values(S.assos).sort((a, b) => a.nom.localeCompare(b.nom));
+  const d = ro ? ' disabled' : '';
+  $('#modal').innerHTML = `<div class="modal" data-close><div class="sheet" role="dialog" aria-modal="true" aria-label="Mission">
+  <div class="row" style="justify-content:space-between"><h2>${isNew ? 'Nouvelle mission' : esc(m.id)}</h2><button class="btn" data-close>Fermer</button></div>
+  ${m.asso && m.region && !zoneOK(S.assos[m.asso], m.region) ? `<div class="banner" style="margin-top:8px"><b>Zone non autorisée.</b> ${esc((S.assos[m.asso] || {}).nom)} : ${esc(zoneTxt(S.assos[m.asso]))}.</div>` : ''}
+  ${x ? `<p class="hint" style="margin-top:6px">${pill(x.status)} ${att(x.pa.reel, x.pa.prevAD, true)} Réalisé ${n0(x.pa.reel)} PA sur ${n0(x.pa.prevAD)} prévus à date · ${n0(x.h.reel)} h · atterrissage au rythme réel ${n0(x.pa.B)} PA</p>` : ''}
+  <div class="form">
+   <label>Identifiant (code interne)<input type="text" id="m_id" value="${esc(m.id)}"${isNew ? '' : ' disabled'} placeholder="26ACF_BRE05"></label>
+   <label>Association<select id="m_asso"${d}><option value="">—</option>${AS.map(a => `<option value="${a.id}"${m.asso === a.id ? ' selected' : ''}>${esc(a.nom)}</option>`).join('')}</select></label>
+   <label>Typologie<select id="m_typo"${d}>${TYPOS.map(t => `<option${m.typo === t ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
+   <label>Région<input type="text" id="m_region" value="${esc(m.region)}"${d}></label>
+   <label>Codes mission AlloHouston<input type="text" id="m_codes" value="${esc((m.codes || []).join(', '))}"${d} placeholder="26PFJ6"></label>
+   <label>Début<input type="date" id="m_start" value="${m.start || ''}"${d}></label>
+   <label>Fin<input type="date" id="m_end" value="${m.end || ''}"${d}></label>
+   <label>Volume prévu (PA)<input type="number" id="m_pa" value="${m.pa ?? ''}" min="0"${d}></label>
+   <label>Volume prévu (heures)<input type="number" id="m_h" value="${m.h ?? ''}" min="0"${d}></label>
+   <label>Statut<select id="m_statut"${d}><option value="active"${m.statut !== 'annulee' ? ' selected' : ''}>Active</option><option value="annulee"${m.statut === 'annulee' ? ' selected' : ''}>Annulée</option></select></label>
+   <label>Mission reconstituée<select id="m_recon"${d}><option value="0"${m.recon ? '' : ' selected'}>Non, objectif planifié</option><option value="1"${m.recon ? ' selected' : ''}>Oui, prévu = réalisé</option></select></label>
+   <label class="wide">Note<input type="text" id="m_note" value="${esc(m.note || '')}"${d}></label>
+  </div>
+  ${ro ? '' : '<div class="row"><button class="btn" data-mrefresh>Recalculer les semaines</button><button class="btn" data-mreset>Répartir à parts égales</button><span class="mut" style="font-size:12px">Laissez une case vide pour une répartition automatique. Une valeur saisie fige la semaine, le reste se répartit sur les autres.</span></div>'}
+  <h3 style="font-family:var(--f-display);margin:16px 0 8px">Semaine par semaine</h3>
+  ${ws.length ? `<div class="tw wk"><table><thead><tr><th class="l">Semaine</th><th>Objectif PA</th><th>Réalisé PA</th><th>Écart cumulé</th><th>Objectif h</th><th>Heures réalisées</th><th>Recruteurs</th></tr></thead><tbody>
+  ${(() => { let cum = 0; return ws.map(w => { const past = P(w) <= P(x ? x.ref : S.ref); cum += past ? (real[w] || 0) - (tP[w] || 0) : 0; const hw = pending.hours[w] || {};
+    return `<tr><td class="l${past ? ' past' : ''}">${wlab(w)}</td><td><input type="number" data-ovp="${w}" value="${ovP[w] ?? ''}" placeholder="${n1(tP[w] || 0)}"${d}></td><td>${real[w] ? n0(real[w]) : (past ? '0' : '')}</td><td class="${past ? cls(cum) : ''}">${past ? sgn(cum) : ''}</td>
+    <td><input type="number" data-ovh="${w}" value="${ovH[w] ?? ''}" placeholder="${m.h ? n1(tH[w] || 0) : ''}"${d}></td><td><input type="number" data-hr="${w}" value="${hw.h ?? ''}"${d}></td><td>${(hw.rec || []).length || ''}</td></tr>`; }).join(''); })()}
+  </tbody></table></div>` : '<p class="mut">Renseignez les dates de début et de fin.</p>'}
+  ${ro ? '' : `<div class="row" style="margin-top:16px;justify-content:space-between"><div class="row"><button class="btn pri" data-msave>Enregistrer</button>${isNew ? '' : '<button class="btn" data-mdup>Dupliquer</button>'}</div>
+  ${isNew ? '' : (pending.del ? '<span class="confirm">Supprimer définitivement cette mission ? <button class="btn dan sm" data-mdel2>Supprimer</button><button class="btn sm" data-mdel0>Annuler</button></span>' : '<button class="btn dan" data-mdel>Supprimer la mission</button>')}</div>`}
+  </div></div>`;
+}
+function readMissionForm() {
+  const m = pending.m; delete m._id; const g = id => $('#' + id);
+  if (pending.isNew) m.id = g('m_id').value.trim();
+  m.asso = g('m_asso').value; m.typo = g('m_typo').value; m.region = g('m_region').value.trim();
+  m.codes = g('m_codes').value.split(/[,;]/).map(s => s.trim()).filter(Boolean);
+  m.start = g('m_start').value; m.end = g('m_end').value;
+  m.pa = g('m_pa').value === '' ? null : Number(g('m_pa').value); m.h = g('m_h').value === '' ? null : Number(g('m_h').value);
+  m.statut = g('m_statut').value; m.note = g('m_note').value; m.recon = g('m_recon').value === '1';
+  m.ov = { pa: {}, h: {} };
+  document.querySelectorAll('[data-ovp]').forEach(i => { if (i.value !== '') m.ov.pa[i.dataset.ovp] = Number(i.value); });
+  document.querySelectorAll('[data-ovh]').forEach(i => { if (i.value !== '') m.ov.h[i.dataset.ovh] = Number(i.value); });
+  document.querySelectorAll('[data-hr]').forEach(i => { const w = i.dataset.hr; if (i.value === '') { if (pending.hours[w]) pending.hours[w].h = null; } else { pending.hours[w] = Object.assign({ rec: [], j: 0 }, pending.hours[w] || {}, { h: Number(i.value), manuel: true }); } });
+}
+async function saveMission() {
+  readMissionForm(); const m = pending.m;
+  if (!/^[A-Za-z0-9_.\-]+$/.test(m.id)) return toast('Identifiant requis : lettres, chiffres, tirets.');
+  if (pending.isNew && S.missions[m.id]) return toast('Cet identifiant existe déjà.');
+  if (!m.asso) return toast('Choisissez une association.');
+  if (!m.start || !m.end || m.end < m.start) return toast('Vérifiez les dates de début et de fin.');
+  const ws = new Set(missionWeeks(m)); ['pa', 'h'].forEach(f => Object.keys(m.ov[f]).forEach(w => { if (!ws.has(w)) delete m.ov[f][w]; }));
+  try {
+    await db.collection('missions').doc(m.id).set(m);
+    const hw = {}; Object.entries(pending.hours).forEach(([w, v]) => { if (v && v.h !== null && v.h !== undefined) hw[w] = v; });
+    const prev = S.heures[m.id];
+    if (Object.keys(hw).length || prev) await db.collection('heures').doc(m.id).set(Object.assign({}, prev || {}, { weeks: hw }));
+    toast('Mission enregistrée'); closeModal();
+  } catch (e) { writeErr(e); }
+}
+async function deleteMission() {
+  try { await db.collection('missions').doc(pending.m.id).delete(); toast('Mission supprimée'); closeModal(); } catch (e) { writeErr(e); }
+}
+function closeModal() { pending = null; $('#modal').innerHTML = ''; render(); }
+function writeErr(e) { if (e && (e.code === 'invalid_argument' || e.code === 'permission-denied')) { S.canWrite = false; toast('Modification refusée : vous avez un accès en lecture seule.'); render(); } else toast('Enregistrement impossible (' + ((e && e.code) || 'erreur') + '). Réessayez.'); }
+
+/* ---------- Associations ---------- */
+function vAssos(M) {
+  const AS = Object.values(S.assos).sort((a, b) => (a.actif === false) - (b.actif === false) || a.nom.localeCompare(b.nom));
+  const g = S.cfg.grille || {};
+  return `<section class="blk"><div class="row" style="justify-content:space-between"><div><h2>Associations</h2><p class="hint">Exercice, mode de rémunération, prix négocié, volume contractuel et volumes supplémentaires confiés en cours d'année.</p></div>${S.canWrite ? '<button class="btn pri" data-new-asso>+ Nouvelle association</button>' : ''}</div>
+  <div class="tw"><table><thead><tr><th class="l">Association</th><th class="l">Exercice</th><th class="l">Rémunération</th><th>Prix</th><th>Contrat ${S.year}</th><th>dont supplémentaire</th><th>Missions</th><th class="l">Zones</th><th class="l">Noms AlloHouston</th><th class="l">État</th></tr></thead><tbody>
+  ${AS.map(a => { const c = contrat(a, S.year); const base = c.base || {}; const sup = (base.supp || []).reduce((s, x) => s + (Number(x[a.remu === 'H' ? 'h' : 'pa']) || 0), 0); const u = a.remu === 'H' ? 'h' : 'pa';
+    return `<tr tabindex="0" data-asso-edit="${a.id}"><td class="l"><b>${esc(a.nom)}</b></td><td class="l">${exWin(a, S.year).label}${(a.exStart || 1) !== 1 ? ' <span class="tag">décalé</span>' : ''}</td><td class="l">${a.remu === 'H' ? 'À l\'heure' : 'Au PA'}</td>
+    <td>${a.remu === 'H' ? (a.prixH ? eur(a.prixH) + '/h' : '<span class="mut">à saisir</span>') : (a.prixPA ? eur(a.prixPA) : '<span class="mut">grille</span>')}</td><td>${c[u] ? n0(c[u]) + ' ' + uLab(u) : '<span class="mut">à saisir</span>'}</td><td>${sup ? '+' + n0(sup) : '–'}</td>
+    <td>${Object.values(S.missions).filter(m => m.asso === a.id).length}</td><td class="l">${esc(zoneTxt(a))}</td><td class="l"><span class="mut">${esc((a.alias || []).join(' · '))}</span></td><td class="l">${a.actif === false ? pill('annulee').replace('Annulée', 'Archivée') : ''}</td></tr>`; }).join('')}
+  </tbody></table></div></section>
+  <section class="blk"><h2>Réglages</h2><p class="hint">Grille de prix TTC par PA, utilisée pour estimer le chiffre d'affaires quand le prix négocié d'une asso au PA n'est pas encore saisi ; seuil de tolérance ; traitement des bulletins annulés après attrition.</p>
+  <div class="form">${TYPOS.map(t => `<label>${t}<input type="number" data-grille="${t}" value="${g[t] ?? ''}"${S.canWrite ? '' : ' disabled'}></label>`).join('')}
+  <label>Seuil « dans les clous » (± %)<input type="number" id="seuil" value="${S.cfg.seuil ?? 5}"${S.canWrite ? '' : ' disabled'}></label>
+  <label>Bulletins annulés après attrition<select id="attr"${S.canWrite ? '' : ' disabled'}><option value="compter"${S.cfg.attrition !== 'exclure' ? ' selected' : ''}>Comptés comme remis</option><option value="exclure"${S.cfg.attrition === 'exclure' ? ' selected' : ''}>Exclus du réalisé</option></select></label></div>
+  ${S.canWrite ? '<button class="btn" data-save-grille>Enregistrer la grille</button>' : ''}</section>`;
+}
+function openAsso(id) {
+  const isNew = !id; const a = isNew ? { id: '', nom: '', alias: [], exStart: 1, remu: 'PA', prixPA: null, prixH: null, actif: true, contrats: {}, note: '' } : JSON.parse(JSON.stringify(S.assos[id]));
+  pending = { a, isNew, del: false }; drawAsso();
+}
+function drawAsso() {
+  const { a, isNew } = pending; const d = S.canWrite ? '' : ' disabled';
+  const years = [...new Set([S.year - 1, S.year, S.year + 1, ...Object.keys(a.contrats || {}).map(Number)])].sort();
+  const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  $('#modal').innerHTML = `<div class="modal" data-close><div class="sheet" role="dialog" aria-modal="true" aria-label="Association">
+  <div class="row" style="justify-content:space-between"><h2>${isNew ? 'Nouvelle association' : esc(a.nom)}</h2><button class="btn" data-close>Fermer</button></div>
+  <div class="form">
+   <label>Nom<input type="text" id="a_nom" value="${esc(a.nom)}"${d}></label>
+   <label>Noms dans AlloHouston (séparés par des virgules)<input type="text" id="a_alias" value="${esc((a.alias || []).join(', '))}"${d}></label>
+   <label>Début d'exercice<select id="a_ex"${d}>${months.map((m, i) => `<option value="${i + 1}"${(a.exStart || 1) === i + 1 ? ' selected' : ''}>1er ${m}</option>`).join('')}</select></label>
+   <label>Rémunération<select id="a_remu"${d}><option value="PA"${a.remu !== 'H' ? ' selected' : ''}>Au PA</option><option value="H"${a.remu === 'H' ? ' selected' : ''}>À l'heure</option></select></label>
+   <label>Prix TTC par PA (€)<input type="number" id="a_ppa" value="${a.prixPA ?? ''}"${d}></label>
+   <label>Prix TTC par heure (€)<input type="number" id="a_ph" value="${a.prixH ?? ''}"${d}></label>
+   <label>État<select id="a_actif"${d}><option value="1"${a.actif !== false ? ' selected' : ''}>Active</option><option value="0"${a.actif === false ? ' selected' : ''}>Archivée</option></select></label>
+   <label class="wide">Note<input type="text" id="a_note" value="${esc(a.note || '')}"${d}></label>
+  </div>
+  <h3 style="font-family:var(--f-display);margin:8px 0">Zones autorisées</h3>
+  <p class="hint">Contraintes de zone imposées par l'association. Le plan d'action ne propose jamais de semaines libres ni de nouvelle mission dans une zone exclue, et la fiche d'une mission signale une zone non autorisée.</p>
+  <div class="form" style="margin-block:6px"><label>Règle<select id="a_zmode"${d}><option value="toutes"${!(a.zones || {}).mode || a.zones.mode === 'toutes' ? ' selected' : ''}>Toutes les zones</option><option value="seulement"${(a.zones || {}).mode === 'seulement' ? ' selected' : ''}>Uniquement les zones cochées</option><option value="sauf"${(a.zones || {}).mode === 'sauf' ? ' selected' : ''}>Toutes sauf les zones cochées</option></select></label></div>
+  <div class="zgrid">${zoneList().map(z => `<label class="zck"><input type="checkbox" data-zone="${esc(z)}"${((a.zones || {}).liste || []).some(y => regC(y) === regC(z)) ? ' checked' : ''}${d}> ${esc(z)}</label>`).join('')}</div>
+  <h3 style="font-family:var(--f-display);margin:14px 0 8px">Volumes contractuels par exercice</h3>
+  <p class="hint">Volume initial, puis chaque volume supplémentaire confié en cours d'année (il s'ajoute au contrat).</p>
+  ${years.map(y => { const c = (a.contrats || {})[y] || { pa: null, h: null, supp: [] }; const lab = exWin(a, y).label;
+    return `<div class="blk" style="padding:12px;margin-bottom:10px"><b>Exercice ${lab}</b><div class="form" style="margin-block:8px"><label>Volume initial PA<input type="number" data-cpa="${y}" value="${c.pa ?? ''}"${d}></label><label>Volume initial heures<input type="number" data-ch="${y}" value="${c.h ?? ''}"${d}></label></div>
+    ${(c.supp || []).map((s, i) => `<div class="row" style="margin-bottom:6px"><input type="date" data-sd="${y}|${i}" value="${s.date || ''}"${d}><input type="number" data-spa="${y}|${i}" value="${s.pa ?? ''}" placeholder="+ PA" style="width:100px"${d}><input type="number" data-sh="${y}|${i}" value="${s.h ?? ''}" placeholder="+ heures" style="width:100px"${d}><input type="text" data-sn="${y}|${i}" value="${esc(s.note || '')}" placeholder="Commentaire"${d}>${S.canWrite ? `<button class="btn sm" data-sdel="${y}|${i}">Retirer</button>` : ''}</div>`).join('')}
+    ${S.canWrite ? `<button class="btn sm" data-sadd="${y}">+ Volume supplémentaire</button>` : ''}</div>`; }).join('')}
+  ${S.canWrite ? `<div class="row" style="justify-content:space-between;margin-top:12px"><button class="btn pri" data-asave>Enregistrer</button>${isNew ? '' : (pending.del ? '<span class="confirm">Supprimer cette association ? Ses missions resteront sans asso. <button class="btn dan sm" data-adel2>Supprimer</button><button class="btn sm" data-adel0>Annuler</button></span>' : '<button class="btn dan" data-adel>Supprimer</button>')}</div>` : ''}
+  </div></div>`;
+}
+function readAssoForm() {
+  const a = pending.a; delete a._id; const g = id => $('#' + id);
+  a.nom = g('a_nom').value.trim(); a.alias = g('a_alias').value.split(',').map(s => s.trim()).filter(Boolean);
+  a.exStart = Number(g('a_ex').value); a.remu = g('a_remu').value; a.prixPA = g('a_ppa').value === '' ? null : Number(g('a_ppa').value); a.prixH = g('a_ph').value === '' ? null : Number(g('a_ph').value);
+  a.actif = g('a_actif').value === '1'; a.note = g('a_note').value; a.contrats = a.contrats || {};
+  a.zones = { mode: g('a_zmode').value, liste: [...document.querySelectorAll('[data-zone]:checked')].map(i => i.dataset.zone) };
+  const num = v => v === '' ? null : Number(v);
+  document.querySelectorAll('[data-cpa]').forEach(i => { const y = i.dataset.cpa; const c = a.contrats[y] = a.contrats[y] || { supp: [] }; c.pa = num(i.value); });
+  document.querySelectorAll('[data-ch]').forEach(i => { const y = i.dataset.ch; const c = a.contrats[y]; c.h = num(i.value); });
+  document.querySelectorAll('[data-sd]').forEach(i => { const [y, k] = i.dataset.sd.split('|'); const s = a.contrats[y].supp[k]; s.date = i.value; s.pa = num($(`[data-spa="${y}|${k}"]`).value); s.h = num($(`[data-sh="${y}|${k}"]`).value); s.note = $(`[data-sn="${y}|${k}"]`).value; });
+  Object.keys(a.contrats).forEach(y => { const c = a.contrats[y]; if (c.pa === null && c.h === null && !(c.supp || []).length) delete a.contrats[y]; });
+}
+async function saveAsso() {
+  readAssoForm(); const a = pending.a; if (!a.nom) return toast('Nom requis.');
+  if (pending.isNew) { a.id = norm(a.nom).slice(0, 24) || 'asso' + Date.now(); if (S.assos[a.id]) a.id += Date.now().toString(36).slice(-3); if (!a.alias.length) a.alias = [a.nom]; }
+  try { await db.collection('assos').doc(a.id).set(a); toast('Association enregistrée'); closeModal(); } catch (e) { writeErr(e); }
+}
+
+/* ---------- Import ---------- */
+let imp = null;
+function vImport(M) {
+  const groups = {}; Object.values(S.imports).forEach(d => { const g = groups[d.importId] = groups[d.importId] || { id: d.importId, remise: d.remise, fichier: d.fichier, nb: 0, mode: d.mode, cree: d.cree, docs: [] }; g.nb += d.nb || 0; g.docs.push(d._id); });
+  const hist = Object.values(groups).sort((a, b) => (b.cree || '') < (a.cree || '') ? -1 : 1);
+  const um = M.R.unmatched; const hm = S.heuresMeta || {};
+  const opts = aid => Object.values(S.missions).filter(m => !aid || m.asso === aid).sort((a, b) => a.id.localeCompare(b.id)).map(m => `<option value="m:${m.id}">${esc(m.id)} · ${esc(m.region)} · ${dfr(m.start)}</option>`).join('');
+  return `<section class="blk"><h2>Importer un export AlloHouston</h2><p class="hint">Déposez l'export des bulletins (chaque jeudi) ou l'export du suivi des heures. Le fichier est lu dans votre navigateur : seuls des compteurs par mission et par semaine sont enregistrés, jamais les coordonnées des donateurs. Un bulletin déjà importé (même « ID unique ») n'est jamais compté deux fois.</p>
+  <label class="drop" id="drop" for="file"><b>Glissez le fichier ici</b> ou cliquez pour le choisir<br><span style="font-size:12px">.xls, .xlsx ou .csv · export des bulletins ou des heures</span></label><input type="file" id="file" accept=".xls,.xlsx,.csv,.html" hidden>
+  <div id="impPrev">${imp ? impPreview() : ''}</div></section>
+  ${um.length ? `<section class="blk"><h2>Bulletins non rattachés</h2><p class="hint">Ces couples code mission + région ne correspondent à aucune mission. Choisissez la mission concernée : le rattachement s'applique à tous les imports, passés et futurs.</p><div class="tw"><table><thead><tr><th class="l">Code</th><th class="l">Région</th><th class="l">Association</th><th>Bulletins</th><th class="l">Semaines</th><th class="l">Rattacher à</th></tr></thead><tbody>
+   ${um.map(g => `<tr><td class="l">${esc(g.code)}</td><td class="l">${esc(g.region)}</td><td class="l">${esc(g.asso)}</td><td>${n0(g.n)}</td><td class="l">${dfr(g.first)} → ${dfr(addD(g.last, 6))}</td><td class="l">${S.canWrite ? `<select data-map="${esc(g.key)}"><option value="">Choisir…</option>${opts(g.aid)}${g.aid ? '' : ''}</select>` : ''}</td></tr>`).join('')}</tbody></table></div></section>` : ''}
+  <section class="blk"><h2>Historique des imports de bulletins</h2>${hist.length ? `<div class="tw"><table><thead><tr><th class="l">Importé le</th><th class="l">Remise</th><th class="l">Fichier</th><th class="l">Type</th><th>Bulletins ajoutés</th><th></th></tr></thead><tbody>
+  ${hist.map(h => `<tr><td class="l">${dfr((h.cree || '').slice(0, 10))}</td><td class="l">${dfr(h.remise)}</td><td class="l">${esc(h.fichier)}</td><td class="l">${h.mode === 'hebdo' ? 'Remise hebdomadaire' : 'Historique'}</td><td>${n0(h.nb)}</td><td>${S.canWrite ? (S._delImp === h.id ? `<span class="confirm">Retirer ces bulletins ? <button class="btn dan sm" data-impdel2="${h.id}">Retirer</button><button class="btn sm" data-impdel0>Annuler</button></span>` : `<button class="btn sm" data-impdel="${h.id}">Annuler l'import</button>`) : ''}</td></tr>`).join('')}</tbody></table></div>` : '<p class="mut">Aucun import pour l\'instant.</p>'}</section>
+  <section class="blk"><h2>Suivi des heures</h2><p class="hint">Dernier import : ${hm.maj ? dfr(hm.maj) + ' · ' + esc(hm.fichier || '') : 'aucun'}. Chaque nouvel import des heures remplace les semaines présentes dans le fichier ; les heures saisies à la main sur d'autres semaines sont conservées.</p>
+  ${(hm.na || []).length ? `<details><summary>${hm.na.length} codes internes sans mission dans l'outil (${n0(hm.na.reduce((s, x) => s + x.h, 0))} h)</summary><div class="tw" style="margin-top:8px"><table><thead><tr><th class="l">Code interne</th><th class="l">Association</th><th class="l">Zone</th><th class="l">Période</th><th>Heures</th><th></th></tr></thead><tbody>
+  ${hm.na.map((x, i) => `<tr><td class="l">${esc(x.ci)}</td><td class="l">${esc(x.asso)}</td><td class="l">${esc(x.zone)}</td><td class="l">${dfr(x.first)} → ${dfr(x.last)}</td><td>${n0(x.h)}</td><td>${S.canWrite ? `<button class="btn sm" data-mkmission="${i}">Créer la mission</button>` : ''}</td></tr>`).join('')}</tbody></table></div></details>` : ''}</section>`;
+}
+function impPreview() {
+  if (imp.error) return `<p class="neg" style="margin-top:12px">${esc(imp.error)}</p>`;
+  if (imp.kind === 'heures') {
+    const a = imp.agg; const tot = Object.values(a.W).reduce((s, m) => s + Object.values(m.weeks).reduce((t, c) => t + c.h, 0), 0);
+    return `<div class="blk" style="margin-top:12px"><b>Suivi des heures · ${esc(imp.name)}</b><p>${n0(imp.list.length)} lignes, ${n0(tot)} heures rattachées à ${Object.keys(a.W).length} missions. ${a.NA.length} codes internes sans mission (${n0(a.NA.reduce((s, x) => s + x.h, 0))} h).</p>
+    ${S.canWrite ? '<button class="btn pri" data-impgo>Importer les heures</button> <button class="btn" data-impcancel>Annuler</button>' : ''}</div>`;
+  }
+  const L = imp.list; const rem = L.filter(x => isCounted(x.statut)); const natt = rem.filter(x => isAttr(x.statut)).length; const nw = rem.filter(x => !imp.known.has(x.id));
+  const byA = {}; nw.forEach(x => byA[x.a] = (byA[x.a] || 0) + 1);
+  const span = imp.span;
+  return `<div class="blk" style="margin-top:12px"><b>Export des bulletins · ${esc(imp.name)}</b>
+  <p>${n0(L.length)} lignes · ${n0(rem.length)} remis${natt ? ` (dont ${n0(natt)} annulés après attrition)` : ''} · <b>${n0(nw.length)} nouveaux</b> · ${n0(rem.length - nw.length)} déjà importés (ignorés). Validations du ${dfr(span[0])} au ${dfr(span[1])}.</p>
+  <div class="form"><label>Type de fichier<select id="impMode"><option value="hebdo"${imp.mode === 'hebdo' ? ' selected' : ''}>Remise hebdomadaire : tous remis le même jour</option><option value="historique"${imp.mode === 'historique' ? ' selected' : ''}>Historique : remise = jeudi suivant la semaine de validation</option></select></label>
+  <label>Date de remise<input type="date" id="impRemise" value="${imp.remise}"></label></div>
+  ${Object.keys(byA).length ? `<div class="tw"><table><thead><tr><th class="l">Association (AlloHouston)</th><th>Nouveaux bulletins</th></tr></thead><tbody>${Object.entries(byA).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<tr><td class="l">${esc(k)}</td><td>${n0(v)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+  ${S.canWrite ? `<div class="row" style="margin-top:10px"><button class="btn pri" data-impgo${nw.length ? '' : ' disabled'}>Importer ${n0(nw.length)} bulletins</button><button class="btn" data-impcancel>Annuler</button></div>` : ''}</div>`;
+}
+async function readFile(file) {
+  imp = { name: file.name, error: null };
+  try {
+    if (typeof XLSX === 'undefined') throw new Error('Le lecteur de fichiers Excel ne s\'est pas chargé. Rechargez la page.');
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type: 'array', raw: true, cellDates: false });
+    const sn = wb.SheetNames[0]; const aoa = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, raw: true, defval: '' });
+    const kind = detectKind(aoa);
+    if (!kind) throw new Error('Format non reconnu : il faut un export AlloHouston des bulletins (colonnes « ID unique », « Code mission ») ou du suivi des heures (« Code interne », « Heures »).');
+    imp.kind = kind;
+    if (kind === 'heures') { imp.list = parseHeures(aoa); imp.agg = aggregateHeures(imp.list, S); }
+    else {
+      imp.list = parseBulletins(aoa);
+      const known = new Set(); Object.values(S.imports).forEach(d => (d.ids || []).forEach(i => known.add(String(i)))); imp.known = known;
+      const vals = imp.list.map(x => x.val || x.eng).sort(); imp.span = [vals[0], vals[vals.length - 1]];
+      const dm = (sn + ' ' + file.name).match(/(\d{2})[\/_.-](\d{2})[\/_.-](\d{4})/);
+      imp.remise = dm ? `${dm[3]}-${dm[2]}-${dm[1]}` : today();
+      imp.mode = (P(imp.span[1]) - P(imp.span[0])) / DAY <= 10 ? 'hebdo' : 'historique';
+    }
+  } catch (e) { imp.error = e.message || String(e); }
+  render();
+}
+async function runImport() {
+  const btn = document.querySelector('[data-impgo]'); if (btn) { btn.disabled = true; btn.textContent = 'Import en cours…'; }
+  try {
+    if (imp.kind === 'heures') {
+      const { W, NA } = imp.agg;
+      for (const [mid, v] of Object.entries(W)) {
+        const prev = (S.heures[mid] && S.heures[mid].weeks) || {};
+        const weeks = Object.assign({}, prev, v.weeks);
+        await db.collection('heures').doc(mid).set({ weeks, src: v.src, maj: today() });
+      }
+      await db.doc('config/heures').set({ fichier: imp.name, maj: today(), nbLignes: imp.list.length, na: NA.map(x => ({ ...x, h: Math.round(x.h * 10) / 10 })) });
+      toast('Heures importées');
+    } else {
+      imp.mode = $('#impMode').value; imp.remise = $('#impRemise').value || today();
+      const nw = imp.list.filter(x => isCounted(x.statut) && !imp.known.has(x.id));
+      const id = 'i' + imp.remise.replace(/-/g, '') + '-' + Date.now().toString(36);
+      const CH = 700; const parts = Math.ceil(nw.length / CH);
+      for (let i = 0; i < parts; i++) {
+        const chunk = nw.slice(i * CH, (i + 1) * CH);
+        await db.collection('imports').doc(id + '-p' + i).set({ importId: id, part: i, parts, remise: imp.remise, fichier: imp.name, cree: new Date().toISOString(), nbTotal: nw.length, nb: chunk.length, mode: imp.mode, ids: chunk.map(x => x.id), rows: aggregateBulletins(chunk, imp.mode, imp.remise) });
+      }
+      S.refAuto = true;
+      toast(nw.length + ' bulletins importés');
+    }
+    imp = null; render();
+  } catch (e) { writeErr(e); if (btn) { btn.disabled = false; btn.textContent = 'Réessayer'; } }
+}
+
+/* ---------- Exports ---------- */
+function vExport(M) {
+  const AS = Object.values(M.assos).sort((a, b) => a.a.nom.localeCompare(b.a.nom));
+  return `<section class="blk"><h2>État à date pour une association</h2><p class="hint">Un PDF propre à présenter lors des points réguliers : synthèse de l'exercice, missions et avancement semaine par semaine. Les données internes (projection au rythme réel, chiffre d'affaires) ne sont incluses que si vous le demandez.</p>
+  <div class="form"><label>Association<select id="xAsso">${AS.map(x => `<option value="${x.a.id}">${esc(x.a.nom)} · ${x.win.label}</option>`).join('')}</select></label>
+  <label><span>Options</span><span class="row" style="font-weight:400;color:var(--ink)"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="xProj"> Projection rythme réel</label><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="xCa"> Chiffre d'affaires</label></span></label></div>
+  <button class="btn pri" data-xpdf>Télécharger le PDF</button></section>
+  <section class="blk"><h2>Export Excel complet</h2><p class="hint">Toutes les missions de l'exercice ${S.year}, la synthèse par association et le détail hebdomadaire prévu / réalisé, pour vos propres analyses.</p><button class="btn" data-xxlsx>Télécharger le fichier Excel</button></section>
+  <section class="blk"><h2>Sauvegarde complète</h2><p class="hint">Un fichier .json avec toutes les données de l'outil : associations, missions, objectifs semaine par semaine, bulletins importés (compteurs uniquement), heures et réglages. À garder en lieu sûr, et à utiliser pour transférer les données vers la version autonome de l'outil.</p>
+  <div class="row"><button class="btn" data-xbackup>Télécharger la sauvegarde</button>${window.STANDALONE && S.canWrite ? '<label class="btn" for="restoreFile">Restaurer une sauvegarde…</label><input type="file" id="restoreFile" accept=".json" hidden>' : ''}</div>
+  ${S._restore ? `<div class="banner" style="margin-top:12px"><b>Restaurer « ${esc(S._restore.name)} » ?</b> ${S._restore.n} éléments du ${esc(S._restore.date)}. Les éléments de même nom seront remplacés ; les autres données restent en place. <span class="confirm"><button class="btn pri sm" data-restore2>Restaurer</button><button class="btn sm" data-restore0>Annuler</button></span></div>` : ''}</section>`;
+}
+function backupData() {
+  const strip = o => { const r = {}; Object.entries(o || {}).forEach(([k, v]) => { const c = Object.assign({}, v); delete c._id; r[k] = c; }); return r; };
+  const cfg = Object.assign({}, S.cfg); delete cfg._id; const hm = S.heuresMeta ? Object.assign({}, S.heuresMeta) : null; if (hm) delete hm._id;
+  return { format: 'atterrissage-direct-sud', version: 1, date: new Date().toISOString(), assos: strip(S.assos), missions: strip(S.missions), imports: strip(S.imports), heures: strip(S.heures), config: Object.assign({ main: cfg }, hm ? { heures: hm } : {}) };
+}
+async function runRestore() {
+  const d = S._restore.data; const cols = ['assos', 'missions', 'imports', 'heures', 'config']; let n = 0;
+  const btn = document.querySelector('[data-restore2]'); if (btn) { btn.disabled = true; btn.textContent = 'Restauration…'; }
+  try { for (const c of cols) for (const [id, doc] of Object.entries(d[c] || {})) { await db.collection(c).doc(id).set(doc); n++; } S._restore = null; toast(n + ' éléments restaurés'); render(); }
+  catch (e) { writeErr(e); }
+}
+async function saveFile(filename, data) {
+  if (!downloads) return toast('Le téléchargement n\'est pas disponible dans cette vue.');
+  try { await downloads.save({ filename, data }); } catch (e) { if (e && e.code !== 'declined') toast('Téléchargement impossible (' + (e.code || 'erreur') + ').'); }
+}
+function pdfAsso() {
+  const M = getModel(); const x = M.assos[$('#xAsso').value]; if (!x) return;
+  const proj = $('#xProj').checked, withCa = $('#xCa').checked;
+  if (!window.jspdf) return toast('Le générateur PDF ne s\'est pas chargé. Rechargez la page.');
+  const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const u = x.unit, U = x[u], c = x.c[u];
+  const ink = [20, 34, 44], acc = [11, 107, 104];
+  doc.setFillColor(...acc); doc.rect(0, 0, 297, 4, 'F');
+  doc.setTextColor(...ink); doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.text(x.a.nom + ' - etat d\'avancement', 14, 18);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(90, 106, 118);
+  const xref = x.unit === 'h' ? S.refH : S.ref;
+  doc.text(`Exercice ${x.win.label}  |  Donnees au ${dfr(addD(xref, 6))}  |  Direct Sud`, 14, 25);
+  const head = [['Contrat', 'Planifie', 'Prevu a date', 'Realise a date', 'Ecart', 'Atteinte', 'Atterrissage planning'].concat(proj ? ['Atterrissage rythme reel'] : []).concat(withCa ? ['CA realise'] : [])];
+  const body = [[c ? n0(c) : '-', n0(U.prev), n0(U.prevAD), n0(U.reel), sgn(U.reel - U.prevAD), pct(U.reel, U.prevAD), n0(U.A)].concat(proj ? [n0(U.B)] : []).concat(withCa ? [x.ca === null ? '-' : eur(x.ca)] : [])];
+  const clean = r => r.map(s => String(s).replace(/ | /g, ' ').replace('€', 'EUR'));
+  doc.autoTable({ startY: 31, head, body: body.map(clean), theme: 'grid', headStyles: { fillColor: acc, fontSize: 9 }, bodyStyles: { fontSize: 11, fontStyle: 'bold' }, margin: { left: 14, right: 14 } });
+  doc.setFontSize(9); doc.setTextColor(90, 106, 118); doc.text(`Unite : ${u === 'h' ? 'heures travaillees' : 'bulletins remis (PA)'}`, 14, doc.lastAutoTable.finalY + 5);
+  const ms = x.ms.slice().sort((a, b) => a.m.start < b.m.start ? -1 : 1);
+  doc.autoTable({ startY: doc.lastAutoTable.finalY + 9, head: [['Mission', 'Region', 'Typologie', 'Periode', 'Prevu', 'Prevu a date', 'Realise', 'Ecart', 'Atteinte', 'Heures', 'Statut'].concat(proj ? ['Atterr. rythme'] : [])],
+    body: ms.map(m => clean([m.m.id, m.m.region, m.m.typo, dfr(m.m.start) + ' - ' + dfr(m.m.end), n0(m[u].prev), n0(m[u].prevAD), n0(m[u].reel), sgn(m[u].reel - m[u].prevAD), pct(m[u].reel, m[u].prevAD), n0(m.h.reel), ST[m.status] || m.status].concat(proj ? [n0(m[u].B)] : []))),
+    theme: 'striped', headStyles: { fillColor: ink, fontSize: 8.5 }, styles: { fontSize: 8.5 }, margin: { left: 14, right: 14 } });
+  /* hebdo */
+  const weeks = {}; ms.forEach(m => { const t = u === 'h' ? m.tH : m.tP; m.ws.forEach(w => { const o = weeks[w] = weeks[w] || { p: 0, r: 0 }; o.p += t[w] || 0; });
+    if (u === 'h') Object.keys(m.hw).forEach(w => { if (P(w) <= P(xref)) (weeks[w] = weeks[w] || { p: 0, r: 0 }).r += Number(m.hw[w].h) || 0; }); else m.entries.forEach(e => (weeks[e.w] = weeks[e.w] || { p: 0, r: 0 }).r += e.n); });
+  let cp = 0, cr = 0; const wrows = Object.keys(weeks).sort().map(w => { cp += weeks[w].p; const past = P(w) <= P(xref); if (past) cr += weeks[w].r; return clean([wlab(w), n0(weeks[w].p), past ? n0(weeks[w].r) : '', n0(cp), past ? n0(cr) : '', past ? sgn(cr - cp) : '']); });
+  doc.addPage(); doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...ink); doc.text('Suivi hebdomadaire', 14, 16);
+  doc.autoTable({ startY: 21, head: [['Semaine', 'Prevu', 'Realise', 'Prevu cumule', 'Realise cumule', 'Ecart cumule']], body: wrows, theme: 'striped', headStyles: { fillColor: ink, fontSize: 8.5 }, styles: { fontSize: 8.5 }, margin: { left: 14, right: 14 } });
+  const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFontSize(8); doc.setTextColor(140, 150, 158); doc.text(`Direct Sud - document genere le ${dfr(today())} - page ${i}/${n}`, 14, 203); }
+  saveFile(`Etat_${norm(x.a.nom)}_${x.win.label}_${today()}.pdf`, doc.output('blob'));
+}
+function xlsxAll() {
+  const M = getModel(); if (typeof XLSX === 'undefined') return toast('Rechargez la page.');
+  const wb = XLSX.utils.book_new();
+  const A = Object.values(M.assos).map(x => ({ Association: x.a.nom, Exercice: x.win.label, Unite: uLab(x.unit), Contrat: x.c[x.unit], Planifie: Math.round(x[x.unit].prev), 'Prevu a date': Math.round(x[x.unit].prevAD), Realise: Math.round(x[x.unit].reel), Ecart: Math.round(x[x.unit].reel - x[x.unit].prevAD), 'Atteinte %': x[x.unit].prevAD > 0 ? Math.round(x[x.unit].reel / x[x.unit].prevAD * 100) : '', 'Atterrissage planning': Math.round(x[x.unit].A), 'Atterrissage rythme': Math.round(x[x.unit].B), 'Heures realisees': Math.round(x.h.reel), 'PA realises': x.pa.reel, 'CA realise': x.ca === null ? '' : Math.round(x.ca) }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(A), 'Associations');
+  const Ms = M.MM.map(x => ({ Mission: x.m.id, Association: (S.assos[x.m.asso] || {}).nom, Typologie: x.m.typo, Region: x.m.region, Codes: (x.m.codes || []).join(', '), Debut: x.m.start, Fin: x.m.end, Statut: ST[x.status], 'Prevu PA': Math.round(x.pa.prev), 'Prevu a date': Math.round(x.pa.prevAD), 'Realise PA': x.pa.reel, 'Ecart PA': Math.round(x.pa.reel - x.pa.prevAD), 'Atteinte %': x.pa.prevAD > 0 ? Math.round(x.pa.reel / x.pa.prevAD * 100) : '', 'Atterr. planning': Math.round(x.pa.A), 'Atterr. rythme': Math.round(x.pa.B), 'Heures prevues': x.m.h || '', 'Heures realisees': Math.round(x.h.reel), 'PA par jour': x.prodJ ? Math.round(x.prodJ * 100) / 100 : '' }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(Ms), 'Missions');
+  const H = []; M.MM.forEach(x => { const real = {}; x.entries.forEach(e => real[e.w] = (real[e.w] || 0) + e.n); const ws = [...new Set([...x.ws, ...Object.keys(real), ...Object.keys(x.hw)])].sort();
+    ws.forEach(w => H.push({ Mission: x.m.id, Association: (S.assos[x.m.asso] || {}).nom, Semaine: 'S' + isoWeek(w), Lundi: w, 'Objectif PA': Math.round((x.tP[w] || 0) * 10) / 10, 'Realise PA': real[w] || 0, 'Heures': x.hw[w] ? x.hw[w].h : 0, 'Recruteurs': x.hw[w] ? (x.hw[w].rec || []).length : 0 })); });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(H), 'Hebdo');
+  const out = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+  saveFile(`Atterrissage_${S.year}_${today()}.xlsx`, new Blob([out]));
+}
+
+/* ---------- Événements ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('button,a,tr[tabindex],[data-close]'); if (!t) return;
+  const ds = t.dataset;
+  if (t.matches('nav.tabs button')) { S.tab = ds.tab; render(); window.scrollTo(0, 0); return; }
+  if (ds.close !== undefined && (e.target === t)) { closeModal(); return; }
+  if (ds.go) { S.tab = ds.go; render(); return; }
+  if (ds.asso && t.tagName === 'TR') { S.f.asso = ds.asso; S.tab = 'missions'; render(); window.scrollTo(0, 0); return; }
+  if (ds.mission) { e.preventDefault(); openMission(ds.mission); return; }
+  if (ds.clearf !== undefined) { S.f = { asso: '', typo: '', region: '', st: 'actif', q: '' }; render(); return; }
+  if (ds.newMission !== undefined) { openMission(null); return; }
+  if (ds.mrefresh !== undefined || ds.mreset !== undefined) { readMissionForm(); if (ds.mreset !== undefined) pending.m.ov = {}; drawMission(); return; }
+  if (ds.msave !== undefined) return saveMission();
+  if (ds.mdup !== undefined) { readMissionForm(); const c = JSON.parse(JSON.stringify(pending.m)); c.id = c.id + '-copie'; c.ov = {}; pending = { m: c, isNew: true, hours: {}, del: false }; drawMission(); return; }
+  if (ds.mdel !== undefined) { readMissionForm(); pending.del = true; drawMission(); return; }
+  if (ds.mdel0 !== undefined) { readMissionForm(); pending.del = false; drawMission(); return; }
+  if (ds.mdel2 !== undefined) return deleteMission();
+  if (ds.assoEdit) { openAsso(ds.assoEdit); return; }
+  if (ds.newAsso !== undefined) { openAsso(null); return; }
+  if (ds.sadd) { readAssoForm(); const c = pending.a.contrats[ds.sadd] = pending.a.contrats[ds.sadd] || { pa: null, h: null, supp: [] }; c.supp = c.supp || []; c.supp.push({ date: today(), pa: null, h: null, note: '' }); drawAsso(); return; }
+  if (ds.sdel) { readAssoForm(); const [y, k] = ds.sdel.split('|'); pending.a.contrats[y].supp.splice(+k, 1); drawAsso(); return; }
+  if (ds.asave !== undefined) return saveAsso();
+  if (ds.adel !== undefined) { readAssoForm(); pending.del = true; drawAsso(); return; }
+  if (ds.adel0 !== undefined) { readAssoForm(); pending.del = false; drawAsso(); return; }
+  if (ds.adel2 !== undefined) { try { await db.collection('assos').doc(pending.a.id).delete(); toast('Association supprimée'); closeModal(); } catch (er) { writeErr(er); } return; }
+  if (ds.saveGrille !== undefined) { const g = {}; document.querySelectorAll('[data-grille]').forEach(i => { if (i.value !== '') g[i.dataset.grille] = Number(i.value); });
+    try { await db.doc('config/main').set(Object.assign({}, S.cfg, { grille: g, seuil: Number($('#seuil').value) || 5, attrition: $('#attr').value })); toast('Grille enregistrée'); } catch (er) { writeErr(er); } return; }
+  if (ds.impgo !== undefined) return runImport();
+  if (ds.impcancel !== undefined) { imp = null; render(); return; }
+  if (ds.impdel) { S._delImp = ds.impdel; render(); return; }
+  if (ds.impdel0 !== undefined) { S._delImp = null; render(); return; }
+  if (ds.impdel2) { try { for (const d of Object.values(S.imports).filter(d => d.importId === ds.impdel2)) await db.collection('imports').doc(d._id).delete(); S._delImp = null; toast('Import retiré'); } catch (er) { writeErr(er); } return; }
+  if (ds.mkmission) { const x = (S.heuresMeta.na || [])[+ds.mkmission]; const aid = buildIndex(S).assoOf(x.asso) || ''; openMission(null, { id: x.ci.replace(/-\d+$/, ''), asso: aid, codes: [x.code], region: x.zone, start: x.first, end: x.last }); return; }
+  if (ds.xpdf !== undefined) return pdfAsso();
+  if (ds.xxlsx !== undefined) return xlsxAll();
+  if (ds.xbackup !== undefined) return saveFile(`Sauvegarde_atterrissage_${today()}.json`, JSON.stringify(backupData()));
+  if (ds.restore0 !== undefined) { S._restore = null; render(); return; }
+  if (ds.restore2 !== undefined) return runRestore();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && pending) closeModal();
+  if (e.key === 'Enter' && e.target.matches('tr[tabindex]')) e.target.click();
+});
+document.addEventListener('change', async e => {
+  const t = e.target;
+  if (t.id === 'year') { S.year = Number(t.value); invalidate(); return; }
+  if (t.id === 'ref') { if (t.value === 'auto') S.refAuto = true; else { S.refAuto = false; S.ref = t.value; } invalidate(); return; }
+  if (t.id === 'chartAsso') { S.chartAsso = t.value; drawChart(getModel()); return; }
+  if (t.dataset.cad) { S.cad[t.dataset.cad] = t.value; render(); return; }
+  if (t.dataset.f && t.dataset.f !== 'q') { S.f[t.dataset.f] = t.value; render(); return; }
+  if (t.id === 'restoreFile' && t.files[0]) { const fl = t.files[0]; t.value = ''; try { const d = JSON.parse(await fl.text()); if (d.format !== 'atterrissage-direct-sud') throw 0; const n = ['assos', 'missions', 'imports', 'heures', 'config'].reduce((s, c) => s + Object.keys(d[c] || {}).length, 0); S._restore = { name: fl.name, data: d, n, date: dfr((d.date || '').slice(0, 10)) }; render(); } catch (_) { toast('Ce fichier n\'est pas une sauvegarde de l\'outil Atterrissage.'); } return; }
+  if (t.id === 'file' && t.files[0]) { readFile(t.files[0]); t.value = ''; return; }
+  if (t.dataset.map !== undefined && t.value) { const mp = Object.assign({}, S.cfg.mappings || {}, { [t.dataset.map]: t.value });
+    try { await db.doc('config/main').set(Object.assign({}, S.cfg, { mappings: mp })); toast('Bulletins rattachés'); } catch (er) { writeErr(er); } return; }
+  if (t.id === 'impMode' && imp) { imp.mode = t.value; }
+});
+let qT = null;
+document.addEventListener('input', e => { if (e.target.id === 'fq') { clearTimeout(qT); qT = setTimeout(() => { S.f.q = e.target.value; render(); const i = $('#fq'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }, 250); } });
+document.addEventListener('dragover', e => { const d = e.target.closest && e.target.closest('#drop'); if (d) { e.preventDefault(); d.classList.add('on'); } });
+document.addEventListener('dragleave', e => { const d = e.target.closest && e.target.closest('#drop'); if (d) d.classList.remove('on'); });
+document.addEventListener('drop', e => { const d = e.target.closest && e.target.closest('#drop'); if (d) { e.preventDefault(); d.classList.remove('on'); const f = e.dataTransfer.files[0]; if (f) readFile(f); } });
+let rT = null; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() => { if (S.tab === 'synthese' && model) drawChart(model); }, 200); });
+
+/* ---------- Démarrage ---------- */
+function setSync(state, txt) { const el = $('#sync'); el.className = 'sync ' + state; el.querySelector('span').textContent = txt; }
+async function boot() {
+  const yearSel = $('#year'); const y0 = new Date().getFullYear();
+  yearSel.innerHTML = [y0 - 2, y0 - 1, y0, y0 + 1].map(y => `<option value="${y}">${y}</option>`).join('');
+  S.year = y0 - (new Date().getMonth() < 1 ? 1 : 0);
+  render();
+  if (!window.claude || !window.claude.use) { setSync('err', 'Hors ligne'); return; }
+  db = await window.claude.use('db');
+  if (!db) { setSync('err', 'Données indisponibles'); render(); return; }
+  window.claude.use('downloads').then(d => downloads = d);
+  window.claude.use('user').then(async u => { if (!u) return; try { const c = await u.can('data.write'); if (c === false) { S.canWrite = false; render(); } } catch (_) {} });
+  setSync('', 'Connexion…');
+  const timer = setTimeout(() => { if (S.loaded < 5) setSync('err', 'Données injoignables pour le moment'); }, 10000);
+  const seen = new Set();
+  const mark = (k, snap) => { if (!snap.metadata.fromCache && !seen.has(k)) { seen.add(k); S.loaded = seen.size; if (S.loaded >= 5) { clearTimeout(timer); setSync('ok', 'Données à jour'); } } };
+  const err = er => { setSync('err', 'Connexion interrompue'); };
+  const sub = (col, key) => db.collection(col).onSnapshot(snap => { const o = {}; snap.docs.forEach(d => { o[d.id] = Object.assign({ _id: d.id }, d.data()); }); S[key] = o; mark(col, snap); dirty = true; if (!pending) render(); }, err);
+  sub('assos', 'assos'); sub('missions', 'missions'); sub('imports', 'imports'); sub('heures', 'heures');
+  db.collection('config').onSnapshot(snap => { snap.docs.forEach(d => { if (d.id === 'main') S.cfg = Object.assign({ grille: {}, mappings: {}, seuil: 5 }, d.data()); if (d.id === 'heures') S.heuresMeta = d.data(); }); mark('config', snap); dirty = true; if (!pending) render(); }, err);
+}
+boot();
+
+</script>
+</body>
+</html>
