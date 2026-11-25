@@ -551,7 +551,7 @@ function render() {
   const root = $('#view');
   if (!db) { root.innerHTML = `<section class="blk empty">Les données ne sont pas accessibles : vérifiez la configuration Firebase et votre connexion.</section>`; return; }
   if (S.loaded < 5) { root.innerHTML = `<section class="blk empty">Chargement des missions, des associations et des remises…</section>`; return; }
-  if (!Object.keys(S.missions).length && !Object.keys(S.assos).length) { root.innerHTML = `<section class="blk empty">Aucune donnée pour l'instant. Créez une association dans l'onglet Associations, ajoutez vos missions, puis importez l'export AlloHouston.</section>`; return; }
+  if (!Object.keys(S.missions).length && !Object.keys(S.assos).length && !['export', 'assos', 'import'].includes(S.tab)) { root.innerHTML = `<section class="blk empty">Aucune donnée pour l'instant. Restaurez une sauvegarde dans l'onglet Exports, ou créez une association dans l'onglet Associations puis importez l'export AlloHouston.</section>`; return; }
   const M = getModel(); renderRefSel();
   const v = { synthese: vSynthese, cadencier: vCadencier, missions: vMissions, assos: vAssos, import: vImport, export: vExport }[S.tab];
   root.innerHTML = v(M);
